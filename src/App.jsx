@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
-import { ArrowRight, CalendarDays, Camera, ChevronLeft, ChevronRight, Gift, Heart, MapPin, Music2, Pause, Play, Star, Utensils, Volume2, VolumeX, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, ChevronLeft, ChevronRight, Gift, Heart, MapPin, Music2, Star, Utensils, X } from 'lucide-react';
 
 // PERSONALIZE THIS FILE: replace bracketed placeholders and add your own photos to /public/photos.
 const content = {
@@ -44,6 +44,11 @@ const photoFallbacks = [
   'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=85',
 ];
 
+// How long the envelope animation needs (flap 0.7s + letter 1.1s + pause) before we scroll away.
+const ENVELOPE_ANIMATION_MS = 2800;
+// How close (px) the mouse can get to the No button before it runs away.
+const DODGE_RADIUS = 150;
+
 function scrollTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function Photo({ src, fallback, alt, className = '' }) {
   const [failed, setFailed] = useState(false);
@@ -66,6 +71,23 @@ function App() {
   const audioRef = useRef(null);
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
   const [showLetter, setShowLetter] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const stageRef = useRef(null);
+  const openTimer = useRef(null);
+  const cardRef = useRef(null);
+  const noRef = useRef(null);
+  const yesRef = useRef(null);
+  const lastDodge = useRef(0);
+
+  const petals = useMemo(() => Array.from({ length: 16 }, (_, i) => ({
+    id: i,
+    left: Math.round(Math.random() * 100),
+    size: 12 + Math.round(Math.random() * 16),
+    delay: -Math.random() * 18,
+    duration: 14 + Math.random() * 12,
+    glyph: ['♡', '✿', '♥', '✦'][i % 4],
+  })), []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => entries.forEach(entry => {
@@ -75,6 +97,18 @@ function App() {
     return () => observer.disconnect();
   }, [opened, accepted, showLetter]);
 
+  useEffect(() => {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => () => clearTimeout(openTimer.current), []);
+
   const gallery = useMemo(() => [
     { src: '/photos/gallery-1.jpg', fallback: photoFallbacks[4], caption: 'Better together ♡' },
     { src: '/photos/gallery-2.jpg', fallback: photoFallbacks[0], caption: 'A little moment, forever kept' },
@@ -83,6 +117,15 @@ function App() {
     { src: '/photos/gallery-5.jpg', fallback: photoFallbacks[2], caption: 'Wherever we go' },
     { src: '/photos/gallery-6.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
   ], []);
+
+  // FIX 1: keep the envelope in view, let the full animation play, THEN scroll to the question.
+  const openEnvelope = () => {
+    if (opened) return;
+    setOpened(true);
+    stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    clearTimeout(openTimer.current);
+    openTimer.current = setTimeout(() => scrollTo('invitation'), ENVELOPE_ANIMATION_MS);
+  };
 
   const celebrate = () => {
     setAccepted(true);
@@ -95,12 +138,48 @@ function App() {
     })();
     setTimeout(() => scrollTo('celebration'), 250);
   };
-  const dodgeNo = () => {
+
+  // FIX 2: the No button jumps to a far-away spot inside the card, away from the pointer and the Yes button.
+  const dodgeNo = (pointer, force = false) => {
+    const now = Date.now();
+    if (!force && now - lastDodge.current < 120) return;
+    lastDodge.current = now;
+    const btn = noRef.current, card = cardRef.current, yes = yesRef.current;
+    if (!btn || !card || !yes) return;
+
+    const b = btn.getBoundingClientRect();
+    const c = card.getBoundingClientRect();
+    const y = yes.getBoundingClientRect();
+    const curX = b.left + b.width / 2, curY = b.top + b.height / 2;
+    const homeX = curX - noPosition.x, homeY = curY - noPosition.y;
+    const px = pointer ? pointer.x : curX, py = pointer ? pointer.y : curY;
+    const yesX = y.left + y.width / 2, yesY = y.top + y.height / 2;
+
+    const pad = 12;
+    const minX = Math.max(c.left, 0) + pad + b.width / 2;
+    const maxX = Math.min(c.right, window.innerWidth) - pad - b.width / 2;
+    const minY = Math.max(c.top, 70) + pad + b.height / 2;
+    const maxY = Math.min(c.bottom, window.innerHeight) - pad - b.height / 2;
+    if (maxX <= minX || maxY <= minY) return;
+
+    let best = { x: curX, y: curY }, bestScore = -1;
+    for (let i = 0; i < 40; i++) {
+      const x = minX + Math.random() * (maxX - minX);
+      const yy = minY + Math.random() * (maxY - minY);
+      const score = Math.min(Math.hypot(x - px, yy - py), Math.hypot(x - curX, yy - curY) * 1.2, Math.hypot(x - yesX, yy - yesY) * 1.5);
+      if (score > bestScore) { bestScore = score; best = { x, y: yy }; }
+    }
+    setNoPosition({ x: best.x - homeX, y: best.y - homeY });
     setNoCount(v => v + 1);
-    const x = (Math.random() - 0.5) * 180;
-    const y = (Math.random() - 0.5) * 90;
-    setNoPosition({ x, y });
   };
+
+  const onCardPointerMove = e => {
+    if (e.pointerType === 'touch' || !noRef.current) return;
+    const r = noRef.current.getBoundingClientRect();
+    const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+    if (d < DODGE_RADIUS) dodgeNo({ x: e.clientX, y: e.clientY });
+  };
+
   const revealReason = index => setReasonOpen(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
   const nextGallery = delta => setGalleryIndex(prev => (prev + delta + gallery.length) % gallery.length);
   const toggleMusic = async () => {
@@ -114,21 +193,33 @@ function App() {
     catch { setMusicOn(false); setMusicStatus('Add music.mp3'); }
   };
   const getPlanIcon = icon => ({ calendar: <CalendarDays />, location: <MapPin />, star: <Star />, food: <Utensils />, gift: <Gift /> }[icon]);
+  const yesScale = 1 + Math.min(noCount, 10) * 0.045;
 
   return <main>
+    <div className="scroll-progress" style={{ width: `${progress}%` }} />
+    <div className="petals" aria-hidden="true">{petals.map(p => <span key={p.id} style={{ left: `${p.left}%`, fontSize: p.size, animationDelay: `${p.delay}s`, animationDuration: `${p.duration}s` }}>{p.glyph}</span>)}</div>
     <div className="ambient ambient-one"/><div className="ambient ambient-two"/>
     <nav className="topbar"><a className="brand" href="#top" onClick={e => { e.preventDefault(); scrollTo('top'); }}><span>♡</span> little things, big love</a><div className="nav-links"><button onClick={() => scrollTo('story')}>Our story</button><button onClick={() => scrollTo('date-plan')}>The date</button><button onClick={() => scrollTo('letter')}>A letter</button></div><button className="music-toggle" onClick={toggleMusic} aria-label={musicOn ? 'Pause music' : 'Play background music'} title="Add your own track at public/music.mp3"><Music2 size={16}/><span>{musicOn ? 'Music on' : (musicStatus || 'Music')}</span></button></nav>
 
     <section className="hero section-wrap" id="top">
-      <div className="hero-copy reveal"><span className="eyebrow"><span className="tiny-heart">♥</span> A little something, just for you</span><h1>{content.openingLine}</h1><p>I made you a tiny corner of the internet, filled with a few things I want you to know.</p><button className="primary-button" onClick={() => { setOpened(true); setTimeout(() => scrollTo('invitation'), 400); }}>Open your little surprise <ArrowRight size={16}/></button><div className="handwritten hero-note">made with love, just for you <span>♡</span></div></div>
-      <div className={`envelope-stage reveal ${opened ? 'is-open' : ''}`} onClick={() => { if (!opened) { setOpened(true); setTimeout(() => scrollTo('invitation'), 450); } }} role="button" tabIndex={0} aria-label="Open the love letter" onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { setOpened(true); setTimeout(() => scrollTo('invitation'), 450); } }}>
+      <div className="hero-copy reveal"><span className="eyebrow"><span className="tiny-heart">♥</span> A little something, just for you</span><h1>{content.openingLine}</h1><p>I made you a tiny corner of the internet, filled with a few things I want you to know.</p><button className="primary-button" onClick={openEnvelope} disabled={opened}>{opened ? 'Opening your surprise…' : 'Open your little surprise'} <ArrowRight size={16}/></button><div className="handwritten hero-note">made with love, just for you <span>♡</span></div></div>
+      <div ref={stageRef} className={`envelope-stage reveal ${opened ? 'is-open' : ''}`} onClick={openEnvelope} role="button" tabIndex={0} aria-label="Open the love letter" onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEnvelope(); } }}>
         <div className="sparkle s1">✦</div><div className="sparkle s2">♡</div><div className="envelope"><div className="envelope-back"/><div className="letter-peek"><span>For my favorite person</span><Heart fill="currentColor" size={18}/></div><div className="envelope-flap"/><div className="envelope-front"/><div className="wax-seal"><Heart fill="currentColor" size={22}/></div></div><span className="envelope-hint">{opened ? 'Your little surprise awaits ↓' : 'tap the envelope to open'}</span>
       </div>
       <div className="hero-flower flower-a">✿</div><div className="hero-flower flower-b">✾</div>
     </section>
 
     <section className="invitation section-wrap" id="invitation">
-      <div className="invitation-card reveal"><div className="card-sparkle">✧</div><span className="eyebrow">one tiny question</span><div className="heart-bloom">♥</div><h2>Hey, my love<span>...</span></h2><p className="muted">I have something important to ask you.</p><div className="tiny-envelope">✉</div><h3>{content.question}</h3><div className="answer-row"><button className="yes-button" onClick={celebrate}>Yes, of course! <Heart size={16} fill="currentColor"/></button><button className="no-button" style={{ transform: `translate(${noPosition.x}px, ${noPosition.y}px)` }} onMouseEnter={dodgeNo} onTouchStart={e => { e.preventDefault(); dodgeNo(); }} onClick={dodgeNo}>{noCount ? noLines[(noCount - 1) % noLines.length] : 'No 🙈'}</button></div><p className="whisper">psst... the pink button looks good on you <span>♡</span></p></div>
+      <div ref={cardRef} className="invitation-card reveal" onPointerMove={onCardPointerMove}><div className="card-sparkle">✧</div><span className="eyebrow">one tiny question</span><div className="heart-bloom">♥</div><h2>Hey, my love<span>...</span></h2><p className="muted">I have something important to ask you.</p><div className="tiny-envelope">✉</div><h3>{content.question}</h3>
+        <div className="answer-row">
+          <button ref={yesRef} className="yes-button" style={{ transform: `scale(${yesScale})` }} onClick={celebrate}>Yes, of course! <Heart size={16} fill="currentColor"/></button>
+          <button ref={noRef} className="no-button" style={{ transform: `translate(${noPosition.x}px, ${noPosition.y}px)` }}
+            onPointerEnter={e => { if (e.pointerType !== 'touch') dodgeNo({ x: e.clientX, y: e.clientY }, true); }}
+            onPointerDown={e => { if (e.pointerType === 'touch') { e.preventDefault(); dodgeNo({ x: e.clientX, y: e.clientY }, true); } }}
+            onFocus={() => dodgeNo(null, true)}
+            onClick={() => dodgeNo(null, true)}>{noCount ? noLines[(noCount - 1) % noLines.length] : 'No 🙈'}</button>
+        </div>
+        <p className="whisper">psst... the pink button looks good on you <span>♡</span></p></div>
     </section>
 
     {accepted && <section className="celebration section-wrap" id="celebration"><div className="celebration-card reveal visible"><div className="floating-hearts">♥　♡　♥</div><div className="big-heart">♥</div><span className="eyebrow">the best answer</span><h2>Yay! 🥹❤️</h2><h3>{content.yesMessage}</h3><p>I can't wait to make another beautiful memory with you.</p><button className="primary-button" onClick={() => scrollTo('date-plan')}>See our anniversary plan <ArrowRight size={16}/></button></div></section>}
@@ -143,7 +234,7 @@ function App() {
 
     <section className="gallery-section section-wrap" id="gallery"><SectionHeading eyebrow="little moments, kept forever" title="Our Memories" subtitle="A tiny gallery for the days we want to remember."/><div className="gallery-frame reveal"><div className="gallery-feature" onClick={() => setLightbox(galleryIndex)} role="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter') setLightbox(galleryIndex); }}><Photo src={gallery[galleryIndex].src} fallback={gallery[galleryIndex].fallback} alt={gallery[galleryIndex].caption}/><span className="gallery-caption">{gallery[galleryIndex].caption}</span><span className="gallery-zoom"><Camera size={17}/> view memory</span></div><div className="gallery-thumbs">{gallery.map((item, i) => <button className={`gallery-thumb ${galleryIndex === i ? 'active' : ''}`} key={item.caption} onClick={() => setGalleryIndex(i)} aria-label={`Show photo ${i + 1}`}><Photo src={item.src} fallback={item.fallback} alt=""/></button>)}</div><div className="gallery-controls"><button onClick={() => nextGallery(-1)} aria-label="Previous photo"><ChevronLeft size={18}/></button><span>{galleryIndex + 1} <i>/</i> {gallery.length}</span><button onClick={() => nextGallery(1)} aria-label="Next photo"><ChevronRight size={18}/></button></div></div></section>
 
-    <section className="final-section" id="final"><div className="night-sky"><span className="star star-1">✦</span><span className="star star-2">✧</span><span className="star star-3">✦</span><span className="star star-4">✧</span><span className="star star-5">✦</span><div className="final-content"><span className="eyebrow">and this is only the beginning</span><p className="handwritten">Here's to another chapter of us.</p><h2>{content.closing}</h2><p className="final-love">I love you. <Heart fill="currentColor" size={22}/></p><button className="light-button" onClick={() => setSecret(!secret)}>{secret ? 'Your secret is safe with me ♡' : 'One last little secret'} <Heart size={15} fill="currentColor"/></button>{secret && <div className="secret-note">If I could choose all over again, I'd still hope our paths would find each other. ♡</div>}<button className="replay-button" onClick={() => { setAccepted(false); setOpened(false); setSecret(false); scrollTo('top'); }}>↺ &nbsp; Start our little story again</button></div><div className="silhouette"><span>♥</span></div><div className="night-hills"/></div><footer>made with a little extra love <Heart size={12} fill="currentColor"/> for {content.partnerNickname}</footer></section>
+    <section className="final-section" id="final"><div className="night-sky"><span className="star star-1">✦</span><span className="star star-2">✧</span><span className="star star-3">✦</span><span className="star star-4">✧</span><span className="star star-5">✦</span><div className="final-content"><span className="eyebrow">and this is only the beginning</span><p className="handwritten">Here's to another chapter of us.</p><h2>{content.closing}</h2><p className="final-love">I love you. <Heart fill="currentColor" size={22}/></p><button className="light-button" onClick={() => setSecret(!secret)}>{secret ? 'Your secret is safe with me ♡' : 'One last little secret'} <Heart size={15} fill="currentColor"/></button>{secret && <div className="secret-note">If I could choose all over again, I'd still hope our paths would find each other. ♡</div>}<button className="replay-button" onClick={() => { clearTimeout(openTimer.current); setAccepted(false); setOpened(false); setSecret(false); setNoCount(0); setNoPosition({ x: 0, y: 0 }); scrollTo('top'); }}>↺ &nbsp; Start our little story again</button></div><div className="silhouette"><span>♥</span></div><div className="night-hills"/></div><footer>made with a little extra love <Heart size={12} fill="currentColor"/> for {content.partnerNickname}</footer></section>
 
     {lightbox !== null && <div className="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" onClick={() => setLightbox(null)}><button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Close photo"><X/></button><button className="lightbox-arrow left" onClick={e => { e.stopPropagation(); setLightbox((lightbox - 1 + gallery.length) % gallery.length); }} aria-label="Previous photo"><ChevronLeft/></button><Photo src={gallery[lightbox].src} fallback={gallery[lightbox].fallback} alt={gallery[lightbox].caption}/><button className="lightbox-arrow right" onClick={e => { e.stopPropagation(); setLightbox((lightbox + 1) % gallery.length); }} aria-label="Next photo"><ChevronRight/></button><p>{gallery[lightbox].caption}</p></div>}
     <div className="tiny-footer"><span>♡</span> a little website, with a lot of heart <span>♡</span></div>
