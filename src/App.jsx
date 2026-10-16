@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { ArrowRight, CalendarDays, Camera, ChevronLeft, ChevronRight, Gift, Heart, MapPin, Music2, Star, Utensils, X } from 'lucide-react';
-
+import HoldButton from './HoldButton.jsx';
 // PERSONALIZE THIS FILE: replace bracketed placeholders and add your own photos to /public/photos.
 const content = {
   partnerNickname: '[their nickname]',
@@ -47,7 +47,7 @@ const photoFallbacks = [
 // How long the envelope animation needs (flap 0.7s + letter 1.1s + pause) before we scroll away.
 const ENVELOPE_ANIMATION_MS = 2800;
 // How close (px) the mouse can get to the No button before it runs away.
-const DODGE_RADIUS = 150;
+const DODGE_RADIUS = 110;
 
 function scrollTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function Photo({ src, fallback, alt, className = '' }) {
@@ -72,14 +72,14 @@ function App() {
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
   const [showLetter, setShowLetter] = useState(false);
   const [progress, setProgress] = useState(0);
-
+const pointerRef = useRef(null);
   const stageRef = useRef(null);
   const openTimer = useRef(null);
   const cardRef = useRef(null);
   const noRef = useRef(null);
   const yesRef = useRef(null);
   const lastDodge = useRef(0);
-
+  const noSlotRef = useRef(null);
   const petals = useMemo(() => Array.from({ length: 16 }, (_, i) => ({
     id: i,
     left: Math.round(Math.random() * 100),
@@ -108,6 +108,12 @@ function App() {
   }, []);
 
   useEffect(() => () => clearTimeout(openTimer.current), []);
+
+  useEffect(() => {
+  const reset = () => setNoPosition({ x: 0, y: 0 });
+  window.addEventListener('resize', reset);
+  return () => window.removeEventListener('resize', reset);
+}, []);
 
   const gallery = useMemo(() => [
     { src: '/photos/gallery-1.jpg', fallback: photoFallbacks[4], caption: 'Better together ♡' },
@@ -141,44 +147,59 @@ function App() {
 
   // FIX 2: the No button jumps to a far-away spot inside the card, away from the pointer and the Yes button.
   const dodgeNo = (pointer, force = false) => {
-    const now = Date.now();
-    if (!force && now - lastDodge.current < 120) return;
-    lastDodge.current = now;
-    const btn = noRef.current, card = cardRef.current, yes = yesRef.current;
-    if (!btn || !card || !yes) return;
+  const now = Date.now();
+  if (!force && now - lastDodge.current < 120) return;
+  lastDodge.current = now;
 
-    const b = btn.getBoundingClientRect();
-    const c = card.getBoundingClientRect();
-    const y = yes.getBoundingClientRect();
-    const curX = b.left + b.width / 2, curY = b.top + b.height / 2;
-    const homeX = curX - noPosition.x, homeY = curY - noPosition.y;
-    const px = pointer ? pointer.x : curX, py = pointer ? pointer.y : curY;
-    const yesX = y.left + y.width / 2, yesY = y.top + y.height / 2;
+  const slot = noSlotRef.current, btn = noRef.current, card = cardRef.current, yes = yesRef.current;
+  if (!slot || !btn || !card || !yes) return;
 
-    const pad = 12;
-    const minX = Math.max(c.left, 0) + pad + b.width / 2;
-    const maxX = Math.min(c.right, window.innerWidth) - pad - b.width / 2;
-    const minY = Math.max(c.top, 70) + pad + b.height / 2;
-    const maxY = Math.min(c.bottom, window.innerHeight) - pad - b.height / 2;
-    if (maxX <= minX || maxY <= minY) return;
+  const s = slot.getBoundingClientRect();
+  const c = card.getBoundingClientRect();
+  const y = yes.getBoundingClientRect();
+  const w = btn.offsetWidth, h = btn.offsetHeight;
 
-    let best = { x: curX, y: curY }, bestScore = -1;
-    for (let i = 0; i < 40; i++) {
-      const x = minX + Math.random() * (maxX - minX);
-      const yy = minY + Math.random() * (maxY - minY);
-      const score = Math.min(Math.hypot(x - px, yy - py), Math.hypot(x - curX, yy - curY) * 1.2, Math.hypot(x - yesX, yy - yesY) * 1.5);
-      if (score > bestScore) { bestScore = score; best = { x, y: yy }; }
-    }
-    setNoPosition({ x: best.x - homeX, y: best.y - homeY });
-    setNoCount(v => v + 1);
-  };
+  const homeX = s.left + s.width / 2, homeY = s.top + s.height / 2;
+  const curX = homeX + noPosition.x, curY = homeY + noPosition.y;
+  const px = pointer ? pointer.x : curX, py = pointer ? pointer.y : curY;
 
-  const onCardPointerMove = e => {
-    if (e.pointerType === 'touch' || !noRef.current) return;
-    const r = noRef.current.getBoundingClientRect();
-    const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
-    if (d < DODGE_RADIUS) dodgeNo({ x: e.clientX, y: e.clientY });
-  };
+  // Arena = inside the card, from just above the button row down to the card's bottom edge
+  // (so it never covers the heading/question).
+  const pad = 24;
+  const minX = c.left + pad + w / 2;
+  const maxX = c.right - pad - w / 2;
+  const minY = Math.max(c.top + pad + h / 2, s.top - 40 + h / 2);
+  const maxY = c.bottom - pad - h / 2;
+  if (maxX <= minX || maxY <= minY) return;
+
+  let best = null, bestScore = -1;
+  for (let i = 0; i < 60; i++) {
+    const x = minX + Math.random() * (maxX - minX);
+    const yy = minY + Math.random() * (maxY - minY);
+    // don't land on top of the Yes button (+ a small margin)
+    const overlapsYes =
+      x + w / 2 > y.left - 14 && x - w / 2 < y.right + 14 &&
+      yy + h / 2 > y.top - 14 && yy - h / 2 < y.bottom + 14;
+    if (overlapsYes) continue;
+    const dCur = Math.hypot(x - curX, yy - curY);
+    if (dCur < 80) continue; // make sure it actually moves
+    const score = Math.min(Math.hypot(x - px, yy - py), dCur);
+    if (score > bestScore) { bestScore = score; best = { x, y: yy }; }
+  }
+  if (!best) return;
+
+  setNoPosition({ x: best.x - homeX, y: best.y - homeY });
+  setNoCount(v => v + 1);
+};
+
+const onCardPointerMove = e => {
+  pointerRef.current = { x: e.clientX, y: e.clientY };
+  if (noCount === 0 || e.pointerType === 'touch' || !noSlotRef.current) return; // hold stage: no running
+  const s = noSlotRef.current.getBoundingClientRect();
+  const bx = s.left + s.width / 2 + noPosition.x;
+  const by = s.top + s.height / 2 + noPosition.y;
+  if (Math.hypot(e.clientX - bx, e.clientY - by) < DODGE_RADIUS) dodgeNo({ x: e.clientX, y: e.clientY });
+};
 
   const revealReason = index => setReasonOpen(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
   const nextGallery = delta => setGalleryIndex(prev => (prev + delta + gallery.length) % gallery.length);
@@ -210,17 +231,79 @@ function App() {
     </section>
 
     <section className="invitation section-wrap" id="invitation">
-      <div ref={cardRef} className="invitation-card reveal" onPointerMove={onCardPointerMove}><div className="card-sparkle">✧</div><span className="eyebrow">one tiny question</span><div className="heart-bloom">♥</div><h2>Hey, my love<span>...</span></h2><p className="muted">I have something important to ask you.</p><div className="tiny-envelope">✉</div><h3>{content.question}</h3>
-        <div className="answer-row">
-          <button ref={yesRef} className="yes-button" style={{ transform: `scale(${yesScale})` }} onClick={celebrate}>Yes, of course! <Heart size={16} fill="currentColor"/></button>
-          <button ref={noRef} className="no-button" style={{ transform: `translate(${noPosition.x}px, ${noPosition.y}px)` }}
-            onPointerEnter={e => { if (e.pointerType !== 'touch') dodgeNo({ x: e.clientX, y: e.clientY }, true); }}
-            onPointerDown={e => { if (e.pointerType === 'touch') { e.preventDefault(); dodgeNo({ x: e.clientX, y: e.clientY }, true); } }}
-            onFocus={() => dodgeNo(null, true)}
-            onClick={() => dodgeNo(null, true)}>{noCount ? noLines[(noCount - 1) % noLines.length] : 'No 🙈'}</button>
-        </div>
-        <p className="whisper">psst... the pink button looks good on you <span>♡</span></p></div>
-    </section>
+
+  <div ref={cardRef} className="invitation-card reveal" onPointerMove={onCardPointerMove}>
+    <div className="card-sparkle">✧</div>
+    <span className="eyebrow">one tiny question</span>
+    <div className="heart-bloom">♥</div>
+    <h2>Hey, my love<span>...</span></h2>
+    <p className="muted">I have something important to ask you.</p>
+    <div className="tiny-envelope">✉</div>
+    <h3>{content.question}</h3>
+
+
+    <div className="answer-row">
+  <button ref={yesRef} className="yes-button" style={{ transform: `scale(${yesScale})` }} onClick={celebrate}>
+    Yes, of course! <Heart size={16} fill="currentColor"/>
+  </button>
+  <span ref={noSlotRef} className="no-slot">
+    <span
+      ref={noRef}
+      className="no-mover"
+      style={{ transform: `translate(${noPosition.x}px, ${noPosition.y}px)` }}
+    >
+      {noCount === 0 ? (
+        <>
+          <span className="hold-hint" aria-hidden="true">press &amp; hold to say no 🥺</span>
+          <HoldButton
+            className="no-hold nudge"
+            size="sm"
+            radius={99}
+            backgroundColor="#fde6df"
+            textColor="#80555a"
+            fillColor="#c94f68"
+            fillTextColor="#ffffff"
+            holdTime={1800}
+            dodgeAt={0.85}
+            releaseTime={250}
+            pressScale={0.96}
+            wave
+            waveAmplitude={5}
+            glow={false}
+            resetAfter={0}
+            onDodge={() => dodgeNo(pointerRef.current, true)}
+          >
+            No
+          </HoldButton>
+        </>
+      ) : (
+        <button
+          className="no-button"
+          onPointerEnter={e => { if (e.pointerType !== 'touch') dodgeNo({ x: e.clientX, y: e.clientY }, true); }}
+          onPointerDown={e => { if (e.pointerType === 'touch') { e.preventDefault(); dodgeNo({ x: e.clientX, y: e.clientY }, true); } }}
+          onFocus={() => dodgeNo(null, true)}
+          onClick={() => dodgeNo(null, true)}
+        >
+          No
+        </button>
+      )}
+    </span>
+  </span>
+</div>
+
+
+
+
+
+
+    <p className="whisper">psst... the pink button looks good on you <span>♡</span></p>
+  </div>
+
+  {/* confirmation text under the card */}
+  <p className="no-message" aria-live="polite">
+    {noCount > 0 && <span key={noCount}>{noLines[(noCount - 1) % noLines.length]}</span>}
+  </p>
+</section>
 
     {accepted && <section className="celebration section-wrap" id="celebration"><div className="celebration-card reveal visible"><div className="floating-hearts">♥　♡　♥</div><div className="big-heart">♥</div><span className="eyebrow">the best answer</span><h2>Yay! 🥹❤️</h2><h3>{content.yesMessage}</h3><p>I can't wait to make another beautiful memory with you.</p><button className="primary-button" onClick={() => scrollTo('date-plan')}>See our anniversary plan <ArrowRight size={16}/></button></div></section>}
 
