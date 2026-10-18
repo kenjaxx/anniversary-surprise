@@ -1,0 +1,13 @@
+/* ---------- time-together counter ---------- */
+.counter-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:640px;margin:0 auto 18px;position:relative;z-index:2}
+.counter-box{background:#fff9f5;border:1px solid #f0d3ca;border-radius:16px;padding:16px 4px;box-shadow:0 10px 24px -16px #a35c4d77}
+.counter-box strong{display:block;font:500 clamp(24px,4vw,36px)/1 var(--serif);color:var(--rose-dark);font-variant-numeric:tabular-nums}
+.counter-box span{display:block;margin-top:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.countdown-line{margin:0 0 26px;font:italic 17px var(--serif);color:var(--wine);position:relative;z-index:2}
+.countdown-line.done{color:var(--rose-dark)}
+@media(max-width:560px){
+  .counter-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .counter-box{padding:12px 2px;border-radius:12px}
+  .counter-box span{font-size:9px;letter-spacing:.08em}
+  .countdown-line{font-size:15px}
+}
