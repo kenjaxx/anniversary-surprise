@@ -1,0 +1,36 @@
+/* ---------- story timeline ---------- */
+.timeline{position:relative;max-width:980px;margin:0 auto}
+.timeline::before{content:'';position:absolute;top:10px;bottom:10px;left:50%;width:1px;transform:translateX(-50%);background:linear-gradient(transparent,#e3a3ab 8%,#e3a3ab 92%,transparent)}
+
+.chapter{display:grid;grid-template-columns:1fr 56px 1fr;align-items:center;margin-bottom:76px;position:relative}
+.chapter:last-child{margin-bottom:30px}
+
+.chapter-photo{grid-column:1;grid-row:1;padding-right:26px;display:flex;justify-content:center}
+.chapter-dot{grid-column:2;grid-row:1;justify-self:center;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#fff8f3;border:1px solid #efbfc0;color:var(--rose);font-size:17px;box-shadow:0 6px 16px -8px #c94f6866;position:relative;z-index:1}
+.chapter-text{grid-column:3;grid-row:1;padding-left:26px}
+
+.chapter.flip .chapter-photo{grid-column:3;padding-right:0;padding-left:26px}
+.chapter.flip .chapter-text{grid-column:1;padding-left:0;padding-right:26px;text-align:right}
+.chapter.flip .chapter-meta{justify-content:flex-end}
+
+.chapter .polaroid{width:100%;max-width:360px;padding:12px 12px 16px}
+.chapter .polaroid img{height:270px}
+
+.chapter-label{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:#b56c71}
+.chapter-text h3{font:italic 500 clamp(26px,3vw,34px)/1.2 var(--serif);margin:10px 0 12px;color:var(--ink)}
+.chapter-meta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:16px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a8827d}
+.chapter-meta span+span::before{content:'♡';margin-right:10px;color:var(--rose)}
+.chapter-text p{font-size:15.5px;line-height:1.95;color:#7c5e5d;margin:0 0 12px}
+.chapter-text p:first-of-type{color:#5e3e43}
+
+@media(max-width:700px){
+  .timeline::before{left:18px;transform:none}
+  .chapter,.chapter.flip{grid-template-columns:36px 1fr;column-gap:14px;margin-bottom:56px;align-items:start}
+  .chapter-dot,.chapter.flip .chapter-dot{grid-column:1;grid-row:1 / span 2;justify-self:start;width:36px;height:36px;font-size:15px}
+  .chapter-photo,.chapter.flip .chapter-photo{grid-column:2;grid-row:1;padding:0;justify-content:flex-start}
+  .chapter-text,.chapter.flip .chapter-text{grid-column:2;grid-row:2;padding:20px 0 0;text-align:left}
+  .chapter.flip .chapter-meta{justify-content:flex-start}
+  .chapter .polaroid{max-width:none}
+  .chapter .polaroid img{height:220px}
+  .chapter-text p{font-size:14.5px}
+}

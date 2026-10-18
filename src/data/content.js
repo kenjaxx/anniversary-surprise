@@ -20,11 +20,45 @@ export const content = {
     { icon: '♡', title: 'For the little things', text: 'I notice them all, even when you don’t think I do.' },
   ],
 
-  memories: [
-    { title: 'When we first met', date: '[add date]', text: '[Add a little story about how you met.]', photo: '/photos/memory-1.jpg' },
-    { title: 'Our first date', date: '[add date]', text: '[What do you remember most about that day?]', photo: '/photos/memory-2.jpg' },
-    { title: 'A favorite moment', date: '[add date]', text: '[A tiny moment you still think about.]', photo: '/photos/memory-3.jpg' },
-    { title: 'This past year', date: '[add date]', text: '[A memory from this year that means a lot.]', photo: '/photos/memory-4.jpg' },
+  // The depth ribbon. Each moment: a photo, a title, a date and a short caption.
+  // Add or remove items freely (5 to 8 looks best). Photos go in /public/photos.
+  moments: [
+    {
+      title: 'When we first met',
+      date: '[add date]',
+      caption: 'In the school laboratory, classmates in the same subject, and by pure coincidence, seatmates. It was just a seat at a lab table, but it was where our story began.',
+      photo: '/photos/memory-1.jpg',
+    },
+    {
+      title: 'Our first date',
+      date: '[add date]',
+      caption: '[What do you remember most about that day?]',
+      photo: '/photos/memory-2.jpg',
+    },
+    {
+      title: 'A favorite moment',
+      date: '[add date]',
+      caption: '[A tiny moment you still think about.]',
+      photo: '/photos/memory-3.jpg',
+    },
+    {
+      title: 'A day I never want to forget',
+      date: '[add date]',
+      caption: '[A memory from this year that means a lot.]',
+      photo: '/photos/memory-4.jpg',
+    },
+    {
+      title: 'Just us being us',
+      date: '[add date]',
+      caption: '[An ordinary day that turned into a favorite.]',
+      photo: '/photos/memory-5.jpg',
+    },
+    {
+      title: 'Our first year',
+      date: '[add date]',
+      caption: '[A line about how this year felt, and how much you love them.]',
+      photo: '/photos/memory-6.jpg',
+    },
   ],
 
   letter: [
@@ -61,7 +95,7 @@ export const gallery = [
   { src: '/photos/gallery-3.jpg', fallback: photoFallbacks[5], caption: 'Our kind of happy' },
   { src: '/photos/gallery-4.jpg', fallback: photoFallbacks[1], caption: 'One for the memory book' },
   { src: '/photos/gallery-5.jpg', fallback: photoFallbacks[2], caption: 'Wherever we go' },
-  { src: '/photos/gallery-6.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
+  { src: '/photos/gallery-3.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
 ];
 
 // How long the envelope animation needs before we scroll to the next section.

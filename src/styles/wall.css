@@ -1,0 +1,42 @@
+/* ---------- drift wall stage ---------- */
+/* Breaks out of the 1080px content column so the wall can be bigger. */
+.wall-bleed{
+  position:relative;left:50%;transform:translateX(-50%);
+  width:min(1320px,calc(100vw - 48px));
+}
+.wall-stage{
+  position:relative;width:100%;margin:0 auto;border-radius:30px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 0%,#4a2336 0,transparent 65%),linear-gradient(180deg,#2a1420,#1c1226);
+  border:1px solid #5a3347;box-shadow:var(--shadow-lift);
+}
+.wall-hint{position:absolute;left:0;right:0;bottom:18px;margin:0;text-align:center;font:21px var(--script);color:#f5d4d1;opacity:.85;pointer-events:none;z-index:3}
+
+/* caption on the hovered tile */
+.drift-wall__caption{
+  position:absolute;left:0;right:0;bottom:0;padding:30px 14px 12px;
+  font:italic 500 17px/1.25 var(--serif);color:#fff;
+  background:linear-gradient(transparent,rgba(30,12,22,.85));
+  opacity:0;transform:translateY(6px);
+  transition:opacity .35s,transform .35s;
+}
+.drift-wall__tile.is-active .drift-wall__caption,
+.drift-wall__tile:focus-visible .drift-wall__caption{opacity:1;transform:none}
+
+/* memory card (opens on click / tap) */
+.memory-modal{position:fixed;inset:0;z-index:40;background:#1f1b2ceF;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s}
+.memory-modal-card{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;background:#fff9f2;border-radius:20px;box-shadow:0 30px 80px -20px #000a;animation:fadeUp .3s ease both}
+.memory-modal-card img{width:100%;height:clamp(200px,40vh,340px);object-fit:cover;display:block}
+.memory-modal-body{padding:24px 28px 30px;text-align:center}
+.memory-modal-date{display:block;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:#b56c71}
+.memory-modal-body h3{font:italic 500 clamp(26px,4vw,32px)/1.2 var(--serif);margin:10px 0;color:var(--ink)}
+.memory-modal-body p{font-size:15.5px;line-height:1.9;color:#7c5e5d;margin:0}
+.memory-modal-close{position:absolute;top:12px;right:12px;z-index:2;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff9f2e6;border:1px solid #e9d4cb;color:#8e686b}
+
+@media(max-width:640px){
+  .wall-bleed{width:calc(100vw - 24px)}
+  .wall-stage{border-radius:20px}
+  .wall-hint{font-size:18px}
+  .drift-wall__caption{font-size:13px;padding:20px 9px 8px}
+  .memory-modal-body{padding:20px 20px 26px}
+  .memory-modal-body p{font-size:14.5px}
+}
