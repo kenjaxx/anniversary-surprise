@@ -13,15 +13,49 @@ export const content = {
   headline: 'One whole year of you and me.',
   celebrateMessage: 'Thank you for every single day of this year.',
 
-  thanks: [
-    { icon: '♡', title: 'For your heart', text: 'Thank you for being so kind to me, even on my hardest days.' },
-    { icon: '☼', title: 'For your smile', text: 'It still changes my entire mood, a year later.' },
-    { icon: '✦', title: 'For your patience', text: 'Thank you for understanding me, even when I’m difficult. 🤭' },
-    { icon: '♡', title: 'For the little things', text: 'I notice them all, even when you don’t think I do.' },
+  // The flip cards. Front = a photo that symbolizes the feeling. Back = why.
+  // Photos go in /public/photos/feelings/. If a photo is missing, the gradient + glyph show instead.
+  feelings: [
+    {
+      word: 'Calm',
+      glyph: '🌊',
+      from: '#dcebf0',
+      to: '#b3d0da',
+      photo: '/photos/feelings/calm.jpg',
+      title: 'You make me feel calm',
+      text: 'No matter how loud or heavy my day gets, being with you slows everything down. You are my quiet place.',
+    },
+    {
+      word: 'Safe',
+      glyph: '🏡',
+      from: '#fbe6cf',
+      to: '#f2c9a4',
+      photo: '/photos/feelings/safe.jpg',
+      title: 'You make me feel safe',
+      text: 'With you, I can just be myself. You feel like home, and I never have to pretend.',
+    },
+    {
+      word: 'Joy',
+      glyph: '☀️',
+      from: '#fff0b8',
+      to: '#ffc978',
+      photo: '/photos/feelings/joy.jpg',
+      title: 'You make me feel happy',
+      text: 'You turn ordinary moments into my favorite ones. Somehow I’m always smiling around you.',
+    },
+    {
+      word: 'Loved',
+      glyph: '💗',
+      from: '#fbd5dc',
+      to: '#f2a3b4',
+      photo: '/photos/feelings/loved.jpg',
+      title: 'You make me feel loved',
+      text: 'The way you care, even in the little things, makes me feel chosen every single day.',
+    },
   ],
 
-  // The depth ribbon. Each moment: a photo, a title, a date and a short caption.
-  // Add or remove items freely (5 to 8 looks best). Photos go in /public/photos.
+  // The drift wall. Each moment: a photo, a title, a date and a short caption.
+  // Add or remove items freely (8 to 12 looks best). Photos go in /public/photos.
   moments: [
     {
       title: 'When we first met',
@@ -95,7 +129,7 @@ export const gallery = [
   { src: '/photos/gallery-3.jpg', fallback: photoFallbacks[5], caption: 'Our kind of happy' },
   { src: '/photos/gallery-4.jpg', fallback: photoFallbacks[1], caption: 'One for the memory book' },
   { src: '/photos/gallery-5.jpg', fallback: photoFallbacks[2], caption: 'Wherever we go' },
-  { src: '/photos/gallery-3.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
+  { src: '/photos/gallery-6.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
 ];
 
 // How long the envelope animation needs before we scroll to the next section.
