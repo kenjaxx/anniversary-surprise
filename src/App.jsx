@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { content, ENVELOPE_ANIMATION_MS } from './data/content.js';
-import { scrollTo } from './utils/scroll.js';
+import { scrollTo, scrollToElement } from './utils/scroll.js';
 import { fireConfetti } from './utils/confetti.js';
 import useReveal from './hooks/useReveal.js';
 import useScrollProgress from './hooks/useScrollProgress.js';
@@ -22,7 +22,7 @@ function App() {
   const stageRef = useRef(null);
   const openTimer = useRef(null);
 
-  const progress = useScrollProgress();
+  const progressRef = useScrollProgress();
   const { musicOn, musicStatus, toggleMusic } = useMusic();
   useReveal([opened, celebrated]);
 
@@ -31,7 +31,7 @@ function App() {
   const openEnvelope = () => {
     if (opened) return;
     setOpened(true);
-    stageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    scrollToElement(stageRef.current, { block: 'center', duration: 1200 });
     clearTimeout(openTimer.current);
     openTimer.current = setTimeout(() => scrollTo('together'), ENVELOPE_ANIMATION_MS);
   };
@@ -59,9 +59,10 @@ function App() {
 
   return (
     <main>
-      <div className="scroll-progress" style={{ width: `${progress}%` }} />
+      <div className="scroll-progress" ref={progressRef} />
       <Petals />
-      <div className="ambient ambient-one" /><div className="ambient ambient-two" />
+      <div className="ambient ambient-one" data-parallax="0.1" />
+      <div className="ambient ambient-two" data-parallax="0.16" />
 
       <Topbar musicOn={musicOn} musicStatus={musicStatus} onToggleMusic={toggleMusic} />
       <Hero opened={opened} onOpen={openEnvelope} stageRef={stageRef} />

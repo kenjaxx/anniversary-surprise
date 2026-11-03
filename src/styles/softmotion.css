@@ -1,0 +1,68 @@
+/* softmotion.css: gentle, delicate scroll motion. Imported LAST in main.jsx. */
+
+/* Our own eased scroll drives the glide, so the browser's built-in one must be off. */
+html{scroll-behavior:auto}
+
+/* ---------- scroll progress bar (moved with transform, softened in JS) ---------- */
+.scroll-progress{
+  width:100%;transform:scaleX(0);transform-origin:0 50%;
+  transition:none;will-change:transform;
+}
+.ambient{will-change:transform}
+
+/* ---------- soft reveal: rise a little, fade in, sharpen from a faint blur ---------- */
+.reveal{
+  opacity:0;
+  transform:translate3d(0,28px,0);
+  filter:blur(5px);
+  transition:
+    opacity 1.5s cubic-bezier(.22,.7,.25,1) var(--delay,0ms),
+    transform 1.7s cubic-bezier(.22,.7,.25,1) var(--delay,0ms),
+    filter 1.3s ease-out var(--delay,0ms);
+  will-change:opacity,transform,filter;
+}
+.reveal.visible{opacity:1;transform:none;filter:none;will-change:auto}
+
+/* big 3D scenes just fade (no blur), so they stay smooth */
+.wall-stage.reveal,
+.envelope-stage.reveal{filter:none}
+
+/* headings and the card grid let their children do the rising, one after another */
+:is(.section-heading,.feelings-head,.feelings-grid).reveal{transform:none;filter:none}
+
+:is(.section-heading,.feelings-head,.feelings-grid).reveal>*{
+  opacity:0;
+  transform:translate3d(0,18px,0);
+  transition:
+    opacity 1.2s cubic-bezier(.22,.7,.25,1),
+    transform 1.5s cubic-bezier(.22,.7,.25,1);
+}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>*{
+  opacity:1;
+  transform:none;
+}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(1){transition-delay:.05s}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(2){transition-delay:.17s}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(3){transition-delay:.29s}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(4){transition-delay:.41s}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(5){transition-delay:.53s}
+:is(.section-heading,.feelings-head,.feelings-grid).reveal.visible>:nth-child(6){transition-delay:.65s}
+
+/* ---------- petals: slower, with a gentle sway ---------- */
+.petals span{opacity:0}
+@keyframes petalFall{
+  0%{transform:translate3d(0,-6vh,0) rotate(0deg);opacity:0}
+  12%{opacity:.42}
+  30%{transform:translate3d(26px,30vh,0) rotate(70deg)}
+  55%{transform:translate3d(-22px,60vh,0) rotate(150deg)}
+  80%{transform:translate3d(22px,88vh,0) rotate(230deg);opacity:.3}
+  100%{transform:translate3d(-8px,112vh,0) rotate(300deg);opacity:0}
+}
+
+/* ---------- respect "reduce motion" ---------- */
+@media(prefers-reduced-motion:reduce){
+  .reveal,
+  :is(.section-heading,.feelings-head,.feelings-grid).reveal>*{
+    opacity:1!important;transform:none!important;filter:none!important;transition:none!important;
+  }
+}

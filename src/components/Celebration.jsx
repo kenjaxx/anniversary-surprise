@@ -5,7 +5,7 @@ import { scrollTo } from '../utils/scroll.js';
 export default function Celebration() {
   return (
     <section className="celebration section-wrap" id="celebration">
-      <div className="celebration-card reveal visible">
+      <div className="celebration-card reveal">
         <div className="floating-hearts">♥　♡　♥</div>
         <div className="big-heart">♥</div>
         <span className="eyebrow">happy anniversary</span>

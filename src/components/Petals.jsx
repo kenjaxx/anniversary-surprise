@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 
-export default function Petals({ count = 16 }) {
+export default function Petals({ count = 14 }) {
   const petals = useMemo(() => Array.from({ length: count }, (_, i) => ({
     id: i,
     left: Math.round(Math.random() * 100),
-    size: 12 + Math.round(Math.random() * 16),
-    delay: -Math.random() * 18,
-    duration: 14 + Math.random() * 12,
+    size: 11 + Math.round(Math.random() * 13),
+    delay: -Math.random() * 40,
+    duration: 28 + Math.random() * 18,
     glyph: ['♡', '✿', '♥', '✦'][i % 4],
   })), [count]);
 
