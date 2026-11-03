@@ -1,14 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-// Fades in every `.reveal` element when it scrolls into view.
-// Pass values that change when new `.reveal` elements appear on the page.
-export default function useReveal(deps = []) {
+// Returns how far down the page the visitor has scrolled, from 0 to 100.
+export default function useScrollProgress() {
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
-    }), { threshold: 0.12 });
-    document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    return () => {
+      window.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, []);
+
+  return progress;
 }

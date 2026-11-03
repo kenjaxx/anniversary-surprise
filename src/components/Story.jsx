@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { LayoutGrid } from 'lucide-react';
 import { content, photoFallbacks } from '../data/content.js';
 import SectionHeading from './SectionHeading.jsx';
 import DriftWall from './DriftWall.jsx';
 import MemoryModal from './MemoryModal.jsx';
+import AllMemories from './AllMemories.jsx';
 
 const items = content.moments.map((m, i) => ({
   image: m.photo,
@@ -23,8 +25,15 @@ function useIsSmall(breakpoint = 640) {
 }
 
 export default function Story() {
-  const [selected, setSelected] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [showAll, setShowAll] = useState(false);
   const small = useIsSmall();
+
+  const openItem = item => {
+    const i = items.indexOf(item);
+    if (i !== -1) setSelectedIndex(i);
+  };
+  const step = delta => setSelectedIndex(prev => (prev + delta + items.length) % items.length);
 
   return (
     <>
@@ -54,17 +63,38 @@ export default function Story() {
               fade={0.5}
               dim={0.72}
               overlayColor="#2a1420"
-              onSelect={setSelected}
+              onSelect={openItem}
             />
             <p className="wall-hint">{small ? 'tap a photo' : 'hover to pause · click to open'} ♡</p>
           </div>
         </div>
 
+        <div className="wall-actions">
+          <button className="outline-button" onClick={() => setShowAll(true)}>
+            <LayoutGrid size={15} /> View all photos
+          </button>
+        </div>
+
         <p className="section-footnote">Every little moment belongs in our story. <span>♡</span></p>
       </section>
 
-      {/* Outside the .reveal wrapper: a transformed parent would break position:fixed */}
-      {selected && <MemoryModal item={selected} onClose={() => setSelected(null)} />}
+      {/* Rendered outside the .reveal wrapper: a transformed parent would break position:fixed */}
+      {showAll && (
+        <AllMemories
+          items={items}
+          onSelect={i => setSelectedIndex(i)}
+          onClose={() => setShowAll(false)}
+          escapeDisabled={selectedIndex !== null}
+        />
+      )}
+      {selectedIndex !== null && (
+        <MemoryModal
+          item={items[selectedIndex]}
+          onClose={() => setSelectedIndex(null)}
+          onPrev={() => step(-1)}
+          onNext={() => step(1)}
+        />
+      )}
     </>
   );
 }
