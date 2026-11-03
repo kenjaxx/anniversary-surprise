@@ -1,5 +1,6 @@
-import { Music2 } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { scrollTo } from '../utils/scroll.js';
+import { music } from '../data/music.js';
 
 export default function Topbar({ musicOn, musicStatus, onToggleMusic }) {
   return (
@@ -16,9 +17,10 @@ export default function Topbar({ musicOn, musicStatus, onToggleMusic }) {
         className="music-toggle"
         onClick={onToggleMusic}
         aria-label={musicOn ? 'Pause music' : 'Play background music'}
-        title="Add your own track at public/music.mp3"
+        title={`${music.title} · ${music.artist}`}
       >
-        <Music2 size={16} /><span>{musicOn ? 'Music on' : (musicStatus || 'Music')}</span>
+        {musicOn ? <Volume2 size={16} /> : <VolumeX size={16} />}
+        <span>{musicOn ? 'Music on' : (musicStatus || 'Music')}</span>
       </button>
     </nav>
   );

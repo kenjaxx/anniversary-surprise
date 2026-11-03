@@ -14,7 +14,6 @@ import Celebration from './components/Celebration.jsx';
 import Story from './components/Story.jsx';
 import Thanks from './components/Thanks.jsx';
 import Letter from './components/Letter.jsx';
-import Gallery from './components/Gallery.jsx';
 import Closing from './components/Closing.jsx';
 
 function App() {
@@ -71,7 +70,6 @@ function App() {
       <Story />
       <Thanks />
       <Letter />
-      <Gallery />
       <Closing onReplay={replay} />
 
       <div className="tiny-footer"><span>♡</span> a little website, with a lot of heart <span>♡</span></div>
