@@ -9,7 +9,7 @@ import './styles/memories.css';
 import './styles/feelings.css';
 import './styles/softmotion.css';
 import './styles/tour.css';
-
+import './styles/closing.css';
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><App /></React.StrictMode>
 );

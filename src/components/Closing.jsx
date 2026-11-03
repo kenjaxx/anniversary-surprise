@@ -1,9 +1,75 @@
-import { useEffect, useState } from 'react';
-import { Heart } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Heart, Moon } from 'lucide-react';
 import { content } from '../data/content.js';
+
+// A fixed set of stars, generated once (not on every render) from a tiny seeded generator.
+const STARS = (() => {
+  let seed = 11;
+  const rnd = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  const glyphs = ['✦', '✧'];
+  return Array.from({ length: 20 }, (_, i) => ({
+    left: 3 + rnd() * 94,
+    top: 3 + rnd() * 55,
+    size: 9 + Math.round(rnd() * 9),
+    dur: 3.2 + rnd() * 3,
+    delay: -(rnd() * 6), // negative = each star starts at a different point in its cycle
+    glyph: glyphs[i % 2],
+  }));
+})();
+
+const TYPE_MS = 45;      // time per letter
+const PAUSE_MS = 190;    // small breath after , . ! ?
+const START_MS = 450;    // wait before the first letter
+
+// Types the note letter by letter straight into the DOM (no React re-render per letter = no lag).
+function SecretNote({ text }) {
+  const liveRef = useRef(null);
+
+  useEffect(() => {
+    const el = liveRef.current;
+    if (!el) return undefined;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      el.textContent = text;
+      el.classList.remove('is-typing');
+      return undefined;
+    }
+
+    let i = 0;
+    let timer;
+    el.textContent = '';
+    el.classList.add('is-typing');
+
+    const tick = () => {
+      i += 1;
+      el.textContent = text.slice(0, i);
+      if (i >= text.length) {
+        el.classList.remove('is-typing');
+        return;
+      }
+      timer = setTimeout(tick, ',.!?'.includes(text[i - 1]) ? PAUSE_MS : TYPE_MS);
+    };
+    timer = setTimeout(tick, START_MS);
+    return () => clearTimeout(timer);
+  }, [text]);
+
+  return (
+    <div className="secret-note">
+      {/* the invisible full text keeps the box at its final size, so nothing jumps while typing */}
+      <span className="sn-ghost" aria-hidden="true">{text}</span>
+      <span className="sn-live is-typing" ref={liveRef} aria-hidden="true" />
+      <span className="sr-only">{text}</span>
+    </div>
+  );
+}
 
 export default function Closing({ onReplay }) {
   const [secret, setSecret] = useState(false);
+  const skyRef = useRef(null);
 
   // The guided tour reveals the secret note at the very end.
   useEffect(() => {
@@ -17,26 +83,82 @@ export default function Closing({ onReplay }) {
     };
   }, []);
 
+  // Only animate while the night sky is on screen. Off screen, every animation is paused (saves battery and frames).
+  useEffect(() => {
+    const el = skyRef.current;
+    if (!el) return undefined;
+    if (!('IntersectionObserver' in window)) {
+      el.classList.add('is-live');
+      return undefined;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => el.classList.toggle('is-live', entry.isIntersecting),
+      { threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   const replay = () => { setSecret(false); onReplay(); };
 
   return (
     <section className="final-section" id="final">
-      <div className="night-sky">
-        <span className="star star-1">✦</span><span className="star star-2">✧</span><span className="star star-3">✦</span><span className="star star-4">✧</span><span className="star star-5">✦</span>
+      <div className="night-sky" ref={skyRef}>
+        <div className="sky-glow" aria-hidden="true" />
+
+        {STARS.map((s, i) => (
+          <span
+            key={i}
+            className="star"
+            aria-hidden="true"
+            style={{ left: `${s.left}%`, top: `${s.top}%`, fontSize: s.size, '--d': `${s.dur}s`, '--dl': `${s.delay}s` }}
+          >
+            {s.glyph}
+          </span>
+        ))}
+
+        <span className="shoot shoot-1" aria-hidden="true" />
+        <span className="shoot shoot-2" aria-hidden="true" />
+
+        <div className="sky-moon" aria-hidden="true">
+          <Moon size={46} fill="currentColor" strokeWidth={0} />
+        </div>
+
         <div className="final-content">
           <span className="eyebrow">and this is only the beginning</span>
           <p className="handwritten">Here’s to year two.</p>
           <h2>{content.closing}</h2>
           <p className="final-love">I love you. <Heart fill="currentColor" size={22} /></p>
-          <button className="light-button" onClick={() => setSecret(s => !s)}>
-            {secret ? 'Your secret is safe with me ♡' : 'One last little secret'} <Heart size={15} fill="currentColor" />
-          </button>
-          {secret && <div className="secret-note">{content.secret}</div>}
+
+          <div className="secret-slot">
+            {secret ? (
+              <SecretNote text={content.secret} />
+            ) : (
+              <button className="light-button" onClick={() => setSecret(true)}>
+                One last little secret <Heart size={15} fill="currentColor" />
+              </button>
+            )}
+          </div>
+
           <button className="replay-button" onClick={replay}>↺ &nbsp; Start our little story again</button>
         </div>
-        <div className="silhouette"><span>♥</span></div>
-        <div className="night-hills" />
+
+        <svg className="sky-hills" viewBox="0 0 680 130" preserveAspectRatio="none" aria-hidden="true">
+          <polygon points="0,70 120,40 260,66 420,34 560,60 680,44 680,130 0,130" fill="#4a3452" />
+          <polygon points="0,96 150,74 300,98 470,70 620,96 680,84 680,130 0,130" fill="#2c2440" />
+          <polygon points="0,116 200,100 400,114 600,98 680,108 680,130 0,130" fill="#1b1830" />
+        </svg>
+
+        <div className="sky-couple" aria-hidden="true">
+          <span className="sky-couple-heart">♥</span>
+          <svg viewBox="0 0 60 42" width="64" height="45">
+            <ellipse cx="30" cy="30" rx="26" ry="14" fill="#16132a" />
+            <circle cx="22" cy="14" r="8" fill="#16132a" />
+            <circle cx="38" cy="14" r="8" fill="#16132a" />
+          </svg>
+        </div>
       </div>
+
       <footer>made with a little extra love <Heart size={12} fill="currentColor" /> for {content.partnerNickname}</footer>
     </section>
   );

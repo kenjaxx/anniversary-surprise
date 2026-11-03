@@ -1,0 +1,118 @@
+/* closing.css: night sky + handwritten secret note. Import AFTER enhance.css and tour.css in main.jsx.
+   Performance rules used here: only transform/opacity are animated, no blur/filter, gradients are static,
+   and every animation is paused while the section is off screen (.is-live is set by an IntersectionObserver). */
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- the sky ---------- */
+.night-sky{
+  background:#1e2039;
+  min-height:640px;
+  padding:70px 24px 160px;
+  contain:paint;
+}
+.sky-glow{
+  position:absolute;left:50%;bottom:-250px;width:min(1300px,170%);height:520px;
+  transform:translateX(-50%);pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(213,139,136,.5) 0,rgba(156,93,117,.28) 40%,transparent 70%);
+}
+
+/* ---------- stars (opacity + scale only) ---------- */
+.night-sky .star{
+  z-index:0;pointer-events:none;
+  animation:skyTwinkle var(--d,4s) ease-in-out var(--dl,0s) infinite;
+  animation-play-state:paused;
+}
+.night-sky.is-live .star{animation-play-state:running}
+@keyframes skyTwinkle{
+  0%,100%{opacity:.3;transform:scale(.8)}
+  50%{opacity:1;transform:scale(1.15)}
+}
+
+/* ---------- shooting stars: invisible most of the time ---------- */
+.night-sky .shoot{
+  position:absolute;width:96px;height:2px;border-radius:2px;z-index:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#fff0db);
+  opacity:0;
+  animation:skyShoot 9s linear infinite;
+  animation-play-state:paused;
+}
+.night-sky.is-live .shoot{animation-play-state:running}
+.shoot-1{left:12%;top:9%;animation-delay:1.5s}
+.shoot-2{left:50%;top:5%;animation-duration:13s;animation-delay:5s}
+@keyframes skyShoot{
+  0%{opacity:0;transform:translate3d(0,0,0) rotate(27deg)}
+  2%{opacity:1}
+  9%,100%{opacity:0;transform:translate3d(240px,122px,0) rotate(27deg)}
+}
+
+/* ---------- moon (static) ---------- */
+.sky-moon{position:absolute;top:44px;right:9%;z-index:0;color:#fff0db;pointer-events:none;line-height:0}
+.sky-moon::before{
+  content:'';position:absolute;inset:-28px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,240,219,.2),transparent);
+}
+.sky-moon svg{position:relative}
+
+/* ---------- content sits above the scene ---------- */
+.night-sky .final-content{z-index:3}
+
+/* ---------- hills + couple ---------- */
+.sky-hills{position:absolute;left:0;bottom:0;width:100%;height:130px;display:block;z-index:1;pointer-events:none}
+.sky-couple{
+  position:absolute;left:50%;bottom:36px;margin-left:-32px;width:64px;z-index:2;pointer-events:none;line-height:0;
+}
+.sky-couple-heart{
+  position:absolute;left:50%;top:-18px;margin-left:-7px;font-size:14px;line-height:1;color:#eab0b5;
+  animation:heartbeat 2s ease-in-out infinite;animation-play-state:paused;
+}
+.night-sky.is-live .sky-couple-heart{animation-play-state:running}
+
+/* ---------- secret: button, then handwritten typewriter note ---------- */
+.secret-slot{
+  min-height:132px;margin:22px auto 0;
+  display:flex;align-items:flex-start;justify-content:center;
+}
+.night-sky .secret-note{
+  position:relative;max-width:440px;margin:0;padding:20px 28px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);border-radius:14px;
+  font:500 28px/1.35 var(--script);color:#fff4ee;text-align:center;
+  animation:noteIn .8s cubic-bezier(.22,.7,.25,1) both;
+}
+.sn-ghost{display:block;visibility:hidden}
+.sn-live{position:absolute;left:28px;right:28px;top:20px;display:block}
+.sn-live.is-typing::after{
+  content:'';display:inline-block;width:2px;height:.85em;margin-left:3px;vertical-align:-.08em;
+  background:#f5c8c2;animation:snCaret .8s steps(1) infinite;
+}
+@keyframes snCaret{50%{opacity:0}}
+@keyframes noteIn{
+  from{opacity:0;transform:translateY(10px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+
+/* ---------- footer: clear of the tour bar, same colour as the front hill ---------- */
+.final-section footer{
+  background:#1b1830;
+  padding:20px 20px calc(88px + env(safe-area-inset-bottom));
+}
+
+/* ---------- phones ---------- */
+@media(max-width:560px){
+  .night-sky{min-height:600px;padding:56px 18px 140px}
+  .sky-moon{top:26px;right:6%}
+  .sky-moon svg{width:34px;height:34px}
+  .sky-hills{height:104px}
+  .sky-couple{bottom:28px}
+  .secret-slot{min-height:150px}
+  .night-sky .secret-note{font-size:24px;padding:18px 22px}
+  .sn-live{left:22px;right:22px;top:18px}
+}
+
+/* ---------- reduce motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  .night-sky .star{animation:none;opacity:.7}
+  .night-sky .shoot{display:none}
+  .sky-couple-heart{animation:none}
+  .night-sky .secret-note{animation:none}
+}
