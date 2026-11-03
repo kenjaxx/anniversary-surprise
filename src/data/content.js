@@ -71,7 +71,7 @@ export const content = {
   // Photos go in /public/photos. Leave date as '' to hide it in the popup.
   moments: [
     {
-      title: 'Our first date',
+      title: 'Our cute date',
       date: '',
       caption: 'I was nervous and smiling the whole time. I didn’t know it yet, but this was the start of my favorite chapter.',
       photo: '/photos/memory-1.jpg',
@@ -83,7 +83,7 @@ export const content = {
       photo: '/photos/memory-2.jpg',
     },
     {
-      title: 'After our jog',
+      title: 'Our little jog <3',
       date: '',
       caption: 'Sweaty, tired, and still the happiest I could be. Everything is better when I’m next to you.',
       photo: '/photos/memory-3.jpg',
@@ -119,7 +119,7 @@ export const content = {
       photo: '/photos/memory-8.jpg',
     },
     {
-      title: 'Photobooth us',
+      title: 'Photobooth of us',
       date: '',
       caption: 'Every pose, every silly face, every frame is a little piece of us I get to keep forever.',
       photo: '/photos/memory-9.jpg',
@@ -131,13 +131,13 @@ export const content = {
       photo: '/photos/memory-10.jpg',
     },
     {
-      title: 'Casual date at my favorite coffee',
+      title: 'Casual date at my favorite pickup coffee',
       date: '',
       caption: 'My favorite coffee spot got even better with you across the table. Warm cups, easy talks, and no need to rush.',
       photo: '/photos/memory-11.jpg',
     },
     {
-      title: 'Midnight cinema with Abiah',
+      title: 'Midnight cine sa seaside hihi',
       date: '',
       caption: 'A late movie, good company, and you beside me. Sleepy eyes, but I’d stay up for this any night.',
       photo: '/photos/memory-12.jpg',
@@ -149,7 +149,7 @@ export const content = {
       photo: '/photos/memory-13.jpg',
     },
     {
-      title: 'Your family dinner at IT Park',
+      title: 'Family dinner at IT Park',
       date: '',
       caption: 'Sitting at the table with your family and feeling like I belonged. Thank you for letting me be part of your people.',
       photo: '/photos/memory-14.jpg',
@@ -161,7 +161,7 @@ export const content = {
       photo: '/photos/memory-15.jpg',
     },
     {
-      title: 'Just because flowers',
+      title: 'Just because, flowers',
       date: '',
       caption: 'No special occasion needed. I just wanted to see you smile, and it worked every time.',
       photo: '/photos/memory-16.jpg',
