@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { content, ENVELOPE_ANIMATION_MS } from './data/content.js';
+import { music } from './data/music.js';
 import { tour as tourCfg } from './data/tour.js';
 import { scrollTo, scrollToElement } from './utils/scroll.js';
 import { fireConfetti } from './utils/confetti.js';
@@ -8,6 +9,7 @@ import useScrollProgress from './hooks/useScrollProgress.js';
 import useMusic from './hooks/useMusic.js';
 import useAutoTour from './hooks/useAutoTour.js';
 
+import IntroGate from './components/IntroGate.jsx';
 import Petals from './components/Petals.jsx';
 import Topbar from './components/Topbar.jsx';
 import Hero from './components/Hero.jsx';
@@ -28,7 +30,7 @@ function App() {
   const openTimer = useRef(null);
 
   const progressRef = useScrollProgress();
-  const { musicOn, musicStatus, toggleMusic } = useMusic();
+  const { musicOn, musicStatus, toggleMusic, startMusic } = useMusic();
   useReveal([opened, celebrated]);
 
   // After a reload, always begin at the top (browsers otherwise restore the old scroll position).
@@ -99,6 +101,8 @@ function App() {
 
   return (
     <main>
+      {music.gate && <IntroGate onEnter={startMusic} />}
+
       <div className="scroll-progress" ref={progressRef} />
       <Petals />
       <div className="ambient ambient-one" data-parallax="0.1" />

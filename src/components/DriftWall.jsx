@@ -56,6 +56,7 @@ const DriftWall = ({
   const pointerRef = useRef({ x: 0, y: 0 });
   const pointerDampedRef = useRef({ x: 0, y: 0 });
   const lastTsRef = useRef(null);
+  const visibleRef = useRef(true); // false while the wall is scrolled out of view
 
   const [containerHeight, setContainerHeight] = useState(600);
   const [activeId, setActiveId] = useState(null);
@@ -68,6 +69,18 @@ const DriftWall = ({
     const onChange = e => setReduced(e.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  // PERFORMANCE: when the wall is off screen, skip all the 3D work (big win on phones).
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !('IntersectionObserver' in window)) return undefined;
+    const io = new IntersectionObserver(
+      ([entry]) => { visibleRef.current = entry.isIntersecting; },
+      { rootMargin: '120px 0px' }
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   const columnItems = useMemo(() => {
@@ -121,6 +134,13 @@ const DriftWall = ({
 
   useEffect(() => {
     const animate = ts => {
+      // Off screen: do no work, just keep the clock current so there is no jump when it comes back.
+      if (!visibleRef.current) {
+        lastTsRef.current = ts;
+        rafRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
       if (lastTsRef.current === null) lastTsRef.current = ts;
       const dt = Math.min(0.05, Math.max(0, ts - lastTsRef.current) / 1000);
       lastTsRef.current = ts;
@@ -180,7 +200,7 @@ const DriftWall = ({
     setActiveId(null);
   }, []);
 
-  // FIX: finds the tile under the pointer. If a tile is already highlighted and the pointer
+  // Finds the tile under the pointer. If a tile is already highlighted and the pointer
   // is still inside its VISIBLE (lifted) area, keep it, so hover doesn't jump to a neighbour.
   const resolveTile = useCallback((x, y) => {
     const root = containerRef.current;
@@ -217,7 +237,7 @@ const DriftWall = ({
     [parallax, reduced, resolveTile, activate]
   );
 
-  // FIX: on press (important for touch, where there is no hover) highlight the tile first.
+  // On press (important for touch, where there is no hover) highlight the tile first.
   const handlePointerDown = useCallback(
     e => {
       const tile = resolveTile(e.clientX, e.clientY);
@@ -228,7 +248,7 @@ const DriftWall = ({
     [resolveTile, activate]
   );
 
-  // FIX: one click handler for the whole wall. Opens the highlighted tile under the pointer,
+  // One click handler for the whole wall. Opens the highlighted tile under the pointer,
   // so it no longer matters which exact element the click landed on.
   const handleClick = useCallback(
     e => {

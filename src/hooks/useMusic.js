@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { music } from '../data/music.js';
 
 // Tries to autoplay on load. If the browser blocks it (most do until a tap),
-// the music starts on her first tap, click or key press. She can pause it
-// with the music button, and it stays paused after that.
+// the music starts on her first tap, click or key press, or when the "Tap to begin" screen calls startMusic().
+// She can pause it with the music button, and it stays paused after that.
 export default function useMusic() {
   const [musicOn, setMusicOn] = useState(false);
   const [musicStatus, setMusicStatus] = useState('');
@@ -76,7 +76,7 @@ export default function useMusic() {
       if (ok) removeUnlock();
     }
 
-    // 1) try straight away (works on some browsers / when she has visited before)
+    // 1) try straight away (works on some desktop browsers / when she has visited before)
     start(audio).then(ok => {
       if (!ok && audioRef.current === audio) events.forEach(e => window.addEventListener(e, unlock));
     });
@@ -101,6 +101,14 @@ export default function useMusic() {
     };
   }, [start]);
 
+  // Call this straight from a tap handler (the "Tap to begin" screen). play() runs inside her tap, so every browser allows it.
+  const startMusic = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || playingRef.current) return;
+    userPaused.current = false;
+    start(audio);
+  }, [start]);
+
   const toggleMusic = async () => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -117,5 +125,5 @@ export default function useMusic() {
     }
   };
 
-  return { musicOn, musicStatus, toggleMusic };
+  return { musicOn, musicStatus, toggleMusic, startMusic };
 }
