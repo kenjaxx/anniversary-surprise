@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Heart } from 'lucide-react';
-import { content, sweetNotes } from '../data/content.js';
-import SectionHeading from './SectionHeading.jsx';
+import { ArrowRight, Eye, Flame, Heart, ShieldCheck, Sun, Waves } from 'lucide-react';
+import { content } from '../data/content.js';
 import FlipCard from './FlipCard.jsx';
+
+// Line icons instead of emojis. Matched by the card's "word" in content.js.
+const ICONS = {
+  Calm: Waves,
+  Safe: ShieldCheck,
+  Joy: Sun,
+  Loved: Heart,
+  Wanted: Flame,
+  Seen: Eye,
+};
 
 function useIsSmall(breakpoint = 560) {
   const [small, setSmall] = useState(() => window.innerWidth < breakpoint);
@@ -14,71 +23,69 @@ function useIsSmall(breakpoint = 560) {
   return small;
 }
 
-// Front face: your photo. If the file is missing, the gradient + emoji stay visible instead.
-function FeelingFront({ item }) {
+// Front face: your photo as the full background. If the file is missing, a soft pastel gradient shows.
+function FeelingFront({ item, index }) {
   const [failed, setFailed] = useState(false);
+  const Icon = ICONS[item.word] || Heart;
   return (
     <div className="feeling-front" style={{ '--from': item.from, '--to': item.to }}>
-      <span className="feeling-glyph" aria-hidden="true">{item.glyph}</span>
       {!failed && <img src={item.photo} alt="" draggable={false} onError={() => setFailed(true)} />}
+      <i className="feeling-frame" aria-hidden="true" />
+      <span className="feeling-num" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+      <span className="feeling-icon" aria-hidden="true"><Icon size={22} strokeWidth={1.4} /></span>
       <div className="feeling-label">
+        <small>You make me feel</small>
         <span>{item.word}</span>
-        <small>tap to flip ♡</small>
+        <em>Turn me over <ArrowRight size={13} strokeWidth={1.8} /></em>
       </div>
     </div>
   );
 }
 
 function FeelingBack({ item }) {
+  const Icon = ICONS[item.word] || Heart;
   return (
     <div className="feeling-back">
-      <span className="feeling-back-heart" aria-hidden="true">♡</span>
+      <i className="feeling-frame" aria-hidden="true" />
+      <span className="feeling-back-icon" aria-hidden="true"><Icon size={20} strokeWidth={1.4} /></span>
+      <small className="feeling-back-eyebrow">the truth is</small>
       <h3>{item.title}</h3>
+      <span className="feeling-rule" aria-hidden="true" />
       <p>{item.text}</p>
     </div>
   );
 }
 
 export default function Thanks() {
-  const [note, setNote] = useState('');
   const small = useIsSmall();
 
   return (
     <section className="reasons section-wrap" id="reasons">
-      <SectionHeading
-        eyebrow="a year of you"
-        title="How You Make Me Feel"
-        subtitle="Tap a card to flip it."
-      />
+      <div className="feelings-head reveal">
+        <span className="feelings-line" aria-hidden="true" />
+        <span className="eyebrow">a year of you</span>
+        <h2>How You Make Me <em>Feel</em></h2>
+        <p>Touch a card. I’ll tell you exactly why.</p>
+      </div>
 
       <div className="feelings-grid reveal">
-        {content.feelings.map(item => (
+        {content.feelings.map((item, i) => (
           <FlipCard
             key={item.word}
             ariaLabel={`${item.word}. Flip to read why.`}
-            front={<FeelingFront item={item} />}
+            front={<FeelingFront item={item} index={i} />}
             back={<FeelingBack item={item} />}
             width={small ? 160 : 260}
-            height={small ? 240 : 360}
-            radius={small ? 18 : 24}
-            background="#fff9f2"
+            height={small ? 250 : 380}
+            radius={small ? 18 : 22}
+            background="#fff3ec"
             color="#48252b"
-            shadowColor="#a35c4d"
+            shadowColor="#d98a96"
             shadowOpacity={0.35}
-            glareOpacity={0.28}
-            tiltMax={10}
+            glareOpacity={0.22}
+            tiltMax={9}
           />
         ))}
-      </div>
-
-      <div className="random-note">
-        <div>
-          <span className="eyebrow">just because</span>
-          <p>{note || 'Need a little reminder? There’s one waiting for you.'}</p>
-        </div>
-        <button className="outline-button" onClick={() => setNote(sweetNotes[Math.floor(Math.random() * sweetNotes.length)])}>
-          Tap for a little reminder <Heart size={15} />
-        </button>
       </div>
     </section>
   );

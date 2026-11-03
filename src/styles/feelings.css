@@ -1,35 +1,110 @@
-/* ---------- feeling flip cards ---------- */
+/* ---------- section heading (custom) ---------- */
+.feelings-head{text-align:center;max-width:620px;margin:0 auto 52px}
+.feelings-line{display:block;width:1px;height:46px;margin:0 auto 20px;background:linear-gradient(transparent,#c9a063)}
+.feelings-head h2{
+  font:500 clamp(36px,5vw,56px)/1.12 var(--serif);letter-spacing:-.02em;margin:16px 0 14px;color:var(--ink);
+}
+.feelings-head h2 em{
+  font-style:italic;
+  background:linear-gradient(120deg,#c94f68,#a8404f 60%,#c9a063);
+  -webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.06em;
+}
+.feelings-head p{font:italic 19px/1.6 var(--serif);color:#8d6f6d;margin:0}
+
+/* ---------- grid: 6 cards = 3 x 2 on desktop ---------- */
 .feelings-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  justify-items:center;gap:36px 24px;max-width:1120px;margin:0 auto 56px;
+  display:grid;grid-template-columns:repeat(3,260px);
+  justify-content:center;justify-items:center;
+  gap:44px 32px;max-width:1120px;margin:0 auto;
 }
 
-/* front */
-.feeling-front{position:relative;width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(160deg,var(--from),var(--to))}
-.feeling-glyph{font-size:78px;opacity:.9;filter:drop-shadow(0 8px 14px rgba(0,0,0,.12))}
-.feeling-front img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
-.feeling-front::after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 42%,rgba(40,18,26,.68));pointer-events:none}
-.feeling-label{position:absolute;left:0;right:0;bottom:0;z-index:1;padding:0 22px 22px;text-align:left;color:#fff}
-.feeling-label span{display:block;font:italic 500 36px/1.1 var(--serif);text-shadow:0 2px 14px rgba(0,0,0,.35)}
-.feeling-label small{display:block;margin-top:8px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+/* ---------- shared hairline frame (soft gold-white) ---------- */
+.feeling-frame{
+  position:absolute;inset:10px;border:1px solid rgba(255,236,208,.7);border-radius:14px;
+  pointer-events:none;z-index:3;
+}
 
-/* back */
+/* ---------- front: your photo is the background ---------- */
+.feeling-front{
+  position:relative;width:100%;height:100%;overflow:hidden;color:#fff;
+  /* soft pastel shows only if a photo is missing */
+  background:linear-gradient(160deg,var(--from),var(--to));
+}
+.feeling-front img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:center 30%;  /* keeps faces in view */
+  display:block;pointer-events:none;z-index:0;
+}
+/* light rose fade, just enough behind the text so it stays readable */
+.feeling-front::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(rgba(90,36,54,.08) 0%,transparent 38%,rgba(120,52,72,.72) 100%);
+}
+.feeling-num{
+  position:absolute;top:24px;left:26px;z-index:4;
+  font:italic 400 17px var(--serif);letter-spacing:.1em;color:#fff3dc;
+  text-shadow:0 1px 8px rgba(60,20,34,.45);
+}
+.feeling-icon{
+  position:absolute;top:18px;right:20px;z-index:4;width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;color:#fff;
+  border:1px solid rgba(255,236,208,.75);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);
+}
+.feeling-label{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:0 28px 30px;text-align:left}
+.feeling-label small{
+  display:block;font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;font-weight:600;color:#ffe9cf;
+  text-shadow:0 1px 8px rgba(60,20,34,.5);
+}
+.feeling-label span{
+  display:block;margin:8px 0 14px;font:italic 500 50px/1 var(--serif);letter-spacing:-.02em;
+  text-shadow:0 2px 16px rgba(60,20,34,.45);
+}
+.feeling-label em{
+  display:inline-flex;align-items:center;gap:7px;padding-top:12px;
+  font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fff3ea;
+  border-top:1px solid rgba(255,236,208,.6);
+  text-shadow:0 1px 8px rgba(60,20,34,.5);
+}
+
+/* ---------- back ---------- */
 .feeling-back{
-  width:100%;height:100%;padding:30px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  background:linear-gradient(150deg,#fff8f1,#ffe4dc);
+  position:relative;width:100%;height:100%;padding:34px 28px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  background:radial-gradient(100% 60% at 50% 0%,#fff,transparent 70%),linear-gradient(160deg,#fff9f2,#ffe6dd);
 }
-.feeling-back-heart{font-size:28px;color:var(--rose);margin-bottom:12px}
-.feeling-back h3{font:italic 500 24px/1.25 var(--serif);margin:0 0 14px;color:var(--ink)}
+.feeling-back .feeling-frame{border-color:rgba(201,160,99,.7)}
+.feeling-back-icon{
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px;
+  color:#c94f68;border:1px solid rgba(201,160,99,.7);background:#fffaf4;
+}
+.feeling-back-eyebrow{font-size:10.5px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;color:#b56c71}
+.feeling-back h3{font:italic 500 25px/1.25 var(--serif);margin:12px 0 0;color:var(--ink)}
+.feeling-rule{display:block;width:44px;height:1px;margin:18px auto;background:linear-gradient(90deg,transparent,#c9a063,transparent)}
 .feeling-back p{font-size:14.5px;line-height:1.85;color:#7c5e5d;margin:0}
 
+/* ---------- tablets: 2 x 3 ---------- */
+@media(max-width:900px){
+  .feelings-grid{grid-template-columns:repeat(2,260px);gap:40px 28px}
+}
+
+/* ---------- phones: 2 x 3 with smaller cards ---------- */
 @media(max-width:560px){
-  .feelings-grid{grid-template-columns:repeat(2,1fr);gap:26px 12px;margin-bottom:40px}
-  .feeling-glyph{font-size:52px}
-  .feeling-label{padding:0 14px 14px}
-  .feeling-label span{font-size:24px}
-  .feeling-label small{font-size:9px;margin-top:6px}
-  .feeling-back{padding:16px 12px}
-  .feeling-back-heart{font-size:20px;margin-bottom:6px}
-  .feeling-back h3{font-size:15px;margin-bottom:8px}
-  .feeling-back p{font-size:11.5px;line-height:1.6}
+  .feelings-head{margin-bottom:36px}
+  .feelings-head p{font-size:16px}
+  .feelings-grid{grid-template-columns:repeat(2,1fr);gap:26px 12px}
+  .feeling-frame{inset:7px;border-radius:11px}
+  .feeling-num{top:15px;left:16px;font-size:13px}
+  .feeling-icon{top:11px;right:12px;width:30px;height:30px}
+  .feeling-icon svg{width:15px;height:15px}
+  .feeling-label{padding:0 16px 18px}
+  .feeling-label small{font-size:8px;letter-spacing:.18em}
+  .feeling-label span{font-size:30px;margin:5px 0 9px}
+  .feeling-label em{font-size:8.5px;letter-spacing:.12em;padding-top:8px;gap:4px}
+  .feeling-back{padding:18px 14px}
+  .feeling-back-icon{width:32px;height:32px;margin-bottom:8px}
+  .feeling-back-icon svg{width:15px;height:15px}
+  .feeling-back-eyebrow{font-size:8px;letter-spacing:.18em}
+  .feeling-back h3{font-size:15px;margin-top:7px}
+  .feeling-rule{margin:9px auto}
+  .feeling-back p{font-size:11px;line-height:1.55}
 }

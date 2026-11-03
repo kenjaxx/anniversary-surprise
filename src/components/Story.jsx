@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LayoutGrid } from 'lucide-react';
+import { Images, ArrowRight } from 'lucide-react';
 import { content, photoFallbacks } from '../data/content.js';
 import SectionHeading from './SectionHeading.jsx';
 import DriftWall from './DriftWall.jsx';
@@ -70,8 +70,14 @@ export default function Story() {
         </div>
 
         <div className="wall-actions">
-          <button className="outline-button" onClick={() => setShowAll(true)}>
-            <LayoutGrid size={15} /> View all photos
+          <span className="wall-actions-lead">Want to see every photo, uncropped?</span>
+          <button className="view-all-button" onClick={() => setShowAll(true)}>
+            <span className="view-all-icon"><Images size={22} strokeWidth={1.7} /></span>
+            <span className="view-all-text">
+              <strong>View all photos</strong>
+              <small>{items.length} moments, shown in full</small>
+            </span>
+            <ArrowRight className="view-all-arrow" size={20} strokeWidth={2} />
           </button>
         </div>
 

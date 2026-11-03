@@ -1,8 +1,8 @@
 // PERSONALIZE THIS FILE: replace bracketed placeholders and add photos to /public/photos.
 
 export const content = {
-  partnerNickname: '[their nickname]',
-  senderName: '[your name]',
+  partnerNickname: 'My Love, Ehrica',
+  senderName: 'Kenji',
 
   // Our start moment, pinned to Philippine time (UTC+8) so it's exact on any device.
   startDate: '2025-10-19T00:00:00+08:00',
@@ -13,12 +13,12 @@ export const content = {
   headline: 'One whole year of you and me.',
   celebrateMessage: 'Thank you for every single day of this year.',
 
-  // The flip cards. Front = a photo that symbolizes the feeling. Back = why.
-  // Photos go in /public/photos/feelings/. If a photo is missing, the gradient + glyph show instead.
+  // The flip cards (6 for a balanced grid). Front = optional photo. Back = why.
+  // Optional photos go in /public/photos/feelings/. Without a photo, an elegant wine gradient shows.
+  // "word" must be one of: Calm, Safe, Joy, Loved, Wanted, Seen (it picks the icon).
   feelings: [
     {
       word: 'Calm',
-      glyph: '🌊',
       from: '#dcebf0',
       to: '#b3d0da',
       photo: '/photos/feelings/calm.jpg',
@@ -27,7 +27,6 @@ export const content = {
     },
     {
       word: 'Safe',
-      glyph: '🏡',
       from: '#fbe6cf',
       to: '#f2c9a4',
       photo: '/photos/feelings/safe.jpg',
@@ -36,7 +35,6 @@ export const content = {
     },
     {
       word: 'Joy',
-      glyph: '☀️',
       from: '#fff0b8',
       to: '#ffc978',
       photo: '/photos/feelings/joy.jpg',
@@ -45,12 +43,27 @@ export const content = {
     },
     {
       word: 'Loved',
-      glyph: '💗',
       from: '#fbd5dc',
       to: '#f2a3b4',
       photo: '/photos/feelings/loved.jpg',
       title: 'You make me feel loved',
       text: 'The way you care, even in the little things, makes me feel chosen every single day.',
+    },
+    {
+      word: 'Wanted',
+      from: '#f9d3c8',
+      to: '#ee9f9a',
+      photo: '/photos/feelings/wanted.jpg',
+      title: 'You make me feel wanted',
+      text: 'The way you look at me, the way you reach for my hand. Even after a whole year, it still gives me butterflies.',
+    },
+    {
+      word: 'Seen',
+      from: '#e7dcf0',
+      to: '#c8b3da',
+      photo: '/photos/feelings/seen.jpg',
+      title: 'You make me feel seen',
+      text: 'You notice the little things I never say out loud. With you, I don’t have to explain myself. You just get me.',
     },
   ],
 
@@ -155,22 +168,33 @@ export const content = {
     },
   ],
 
-  letter: [
-    'Thank you for this past year. Thank you for the laughs, the patience, the comfort, and for choosing me on the easy days and the hard ones.',
-    'You made a normal year feel like the best one I’ve had. [Add something specific you’re grateful for, a moment, a habit, a way they showed up for you.]',
-    'I’m so proud of us, and so grateful for you. I can’t wait for year two, and every year after.',
-  ],
+ letter: [
+  'Thank you for this past year. Thank you for every laugh, every little adventure, every late-night conversation, every moment of patience, and every bit of comfort you gave me. Thank you for choosing me, not just on the easy days when everything felt right, but also on the difficult days when things weren’t always perfect.',
 
+  'You made an ordinary year feel extraordinary. You turned simple, everyday moments into memories I’ll always carry with me. Whether it was spending time together, laughing over the smallest things, sharing stories, or simply having you beside me, those moments meant more to me than I could ever put into words.',
+
+  'I’m grateful for the way you made me feel loved, for the little things you did without realizing how much they meant to me, and for all the times you made my days a little lighter just by being there.',
+
+  'Looking back, I’m proud of what we shared and everything we experienced together. A year might sound like a short time to some people, but to me, it was a year filled with genuine love, happiness, growth, and memories that will always have a special place in my heart.',
+
+  'If there’s one thing I hope you never forget, it’s that I genuinely appreciated having you in my life. I never took for granted the opportunity to love you, to know you, and to be part of your world.',
+
+  'Thank you for making this chapter of my life something I’ll always be grateful for. No matter where life takes us, I’ll always be thankful that, for a time, our paths crossed and we got to share something beautiful.'
+],
   closing: 'Thank you for being my person. Here’s to year two: more memories, more adventures, more laughter.',
   secret: 'If I could choose all over again, I’d choose you. Every single time. ♡',
 };
 
+// The little reminders shown in the "just because" section.
 export const sweetNotes = [
   'You make the little things feel big.',
   'I’m always on your team.',
   'You are one of my favorite parts of every day.',
   'A tiny reminder: you are loved.',
   'Thank you for choosing me, again and again.',
+  'I still get butterflies when you walk in.',
+  'Come here. I just want to look at you for a second.',
+  'Of all the places I could be, I like it best next to you.',
 ];
 
 // Used when a local photo in /public/photos is missing.
