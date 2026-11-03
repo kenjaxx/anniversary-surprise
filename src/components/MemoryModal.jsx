@@ -1,8 +1,23 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Photo from './Photo.jsx';
 
-export default function MemoryModal({ item, onClose, onPrev, onNext }) {
+const OUT_MS = 420; // how long the old photo takes to dissolve
+
+export default function MemoryModal({ item, total, onClose, onPrev, onNext }) {
+  // `shown` lags behind `item` so the old photo can fade out before the new one blooms in.
+  const [shown, setShown] = useState(item);
+  const [leaving, setLeaving] = useState(false);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    if (item === shown) { setLeaving(false); return undefined; }
+    setLeaving(true);
+    timer.current = setTimeout(() => { setShown(item); setLeaving(false); }, OUT_MS);
+    return () => clearTimeout(timer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item]);
+
   useEffect(() => {
     const onKey = e => {
       if (e.key === 'Escape') onClose();
@@ -14,22 +29,44 @@ export default function MemoryModal({ item, onClose, onPrev, onNext }) {
   }, [onClose, onPrev, onNext]);
 
   const go = (e, fn) => { e.stopPropagation(); fn(); };
+  const words = (shown.caption || '').split(/\s+/).filter(Boolean);
+  const num = String((shown.index ?? 0) + 1).padStart(2, '0');
 
   return (
-    <div className="memory-modal" role="dialog" aria-modal="true" aria-label={item.title} onClick={onClose}>
+    <div className="memory-modal" role="dialog" aria-modal="true" aria-label={shown.title} onClick={onClose}>
       {onPrev && (
         <button className="memory-modal-arrow left" onClick={e => go(e, onPrev)} aria-label="Previous photo">
           <ChevronLeft size={22} />
         </button>
       )}
 
-      <div className="memory-modal-card" onClick={e => e.stopPropagation()}>
+      <div className={`memory-modal-card${leaving ? ' is-leaving' : ''}`} onClick={e => e.stopPropagation()}>
         <button className="memory-modal-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
-        <Photo src={item.image} fallback={item.fallback} alt={item.title} />
-        <div className="memory-modal-body">
-          {item.date && <span className="memory-modal-date">{item.date}</span>}
-          <h3>{item.title}</h3>
-          {item.caption && <p>{item.caption}</p>}
+
+        <div className="mm-swap" key={`${shown.index}-${shown.title}`}>
+          <div className="mm-stage">
+            <Photo className="mm-bg" src={shown.image} fallback={shown.fallback} alt="" />
+            <Photo className="mm-fg" src={shown.image} fallback={shown.fallback} alt={shown.title} />
+            <span className="mm-count">{num} <i>/</i> {String(total).padStart(2, '0')}</span>
+            <span className="mm-float f1" aria-hidden="true">♡</span>
+            <span className="mm-float f2" aria-hidden="true">♥</span>
+            <span className="mm-float f3" aria-hidden="true">♡</span>
+          </div>
+
+          <div className="mm-body">
+            {shown.date && <span className="mm-date">{shown.date}</span>}
+            <h3>{shown.title}</h3>
+            <span className="mm-rule" aria-hidden="true" />
+            {words.length > 0 && (
+              <p className="mm-caption">
+                {words.map((w, i) => (
+                  <Fragment key={i}>
+                    <span style={{ '--w': i }}>{w}</span>{' '}
+                  </Fragment>
+                ))}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

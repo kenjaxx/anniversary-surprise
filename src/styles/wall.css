@@ -74,72 +74,6 @@
 .drift-wall__tile.is-active .drift-wall__caption,
 .drift-wall__tile:focus-visible .drift-wall__caption{opacity:1;transform:none}
 
-/* ---------- memory card (opens on click / tap) ---------- */
-.memory-modal{position:fixed;inset:0;z-index:40;background:#1f1b2ceF;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .2s}
-.memory-modal-card{position:relative;width:min(560px,100%);max-height:92vh;overflow:auto;background:#fff9f2;border-radius:20px;box-shadow:0 30px 80px -20px #000a;animation:fadeUp .3s ease both}
-
-/* Show the WHOLE photo (no cropping). Keeps its own proportions, never taller than the screen. */
-.memory-modal-card img{
-  width:100%;
-  height:auto;
-  max-height:72vh;
-  object-fit:contain;
-  display:block;
-  background:#f3ddd5;
-}
-
-.memory-modal-body{padding:24px 28px 30px;text-align:center}
-.memory-modal-date{display:block;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:#b56c71}
-.memory-modal-body h3{font:italic 500 clamp(26px,4vw,32px)/1.2 var(--serif);margin:10px 0 0;color:var(--ink)}
-.memory-modal-body p{font-size:15.5px;line-height:1.9;color:#7c5e5d;margin:12px 0 0}
-.memory-modal-close{position:absolute;top:12px;right:12px;z-index:2;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#fff9f2e6;border:1px solid #e9d4cb;color:#8e686b}
-
-/* previous / next arrows beside the popup */
-.memory-modal-arrow{
-  position:absolute;top:50%;transform:translateY(-50%);z-index:3;
-  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
-  background:#ffffff1c;border:1px solid #ffffff45;color:#fff;
-  transition:background .2s;
-}
-.memory-modal-arrow:hover{background:#ffffff38}
-.memory-modal-arrow.left{left:22px}
-.memory-modal-arrow.right{right:22px}
-
-/* ---------- "All our photos" full-screen gallery ---------- */
-.all-memories{
-  position:fixed;inset:0;z-index:35;overflow-y:auto;
-  background:radial-gradient(ellipse at 50% 0%,#4a2336 0,transparent 60%),#1c1226;
-  animation:fadeIn .25s;
-}
-.all-memories-bar{
-  position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:18px max(5vw,20px);
-  background:rgba(28,18,38,.88);backdrop-filter:blur(14px);
-  border-bottom:1px solid #ffffff1a;
-}
-.all-memories-eyebrow{display:block;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:#f0b4bd}
-.all-memories-bar h2{font:italic 500 clamp(26px,4vw,34px)/1.2 var(--serif);margin:4px 0 0;color:#fff0e9}
-.all-memories-close{
-  width:42px;height:42px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;
-  background:#ffffff15;border:1px solid #ffffff45;color:#fff;
-}
-.all-memories-close:hover{background:#ffffff30}
-
-/* columns layout: every photo keeps its own shape, nothing is cropped */
-.all-memories-grid{
-  columns:3 260px;column-gap:18px;
-  max-width:1200px;margin:0 auto;padding:28px max(5vw,20px) 60px;
-}
-.all-memory{
-  display:block;width:100%;margin:0 0 18px;padding:10px 10px 12px;border:0;
-  break-inside:avoid;background:#fffdf8;border-radius:12px;
-  box-shadow:0 14px 34px -14px #000a;
-  transition:transform .3s,box-shadow .3s;
-}
-.all-memory:hover{transform:translateY(-4px);box-shadow:0 20px 44px -14px #000c}
-.all-memory img{width:100%;height:auto;display:block;border-radius:6px;background:#f3ddd5;min-height:80px}
-.all-memory span{display:block;padding-top:10px;text-align:center;font:italic 500 16px/1.3 var(--serif);color:var(--ink)}
-
 @media(max-width:640px){
   .wall-bleed{width:calc(100vw - 24px)}
   .wall-stage{border-radius:20px}
@@ -153,14 +87,4 @@
   .story .section-footnote{font-size:25px;margin-top:28px}
   .story .section-footnote span{font-size:24px}
   .drift-wall__caption{font-size:13px;padding:20px 9px 8px}
-  .memory-modal{padding:14px}
-  .memory-modal-card img{max-height:66vh}
-  .memory-modal-body{padding:20px 20px 26px}
-  .memory-modal-body p{font-size:14.5px}
-  .memory-modal-arrow{width:38px;height:38px;top:auto;bottom:18px;transform:none}
-  .memory-modal-arrow.left{left:calc(50% - 50px)}
-  .memory-modal-arrow.right{right:calc(50% - 50px)}
-  .all-memories-grid{columns:2 140px;column-gap:12px;padding-top:18px}
-  .all-memory{padding:7px 7px 9px;margin-bottom:12px}
-  .all-memory span{font-size:13px}
 }

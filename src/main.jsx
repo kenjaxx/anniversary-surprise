@@ -5,8 +5,10 @@ import './styles/styles.css';
 import './styles/enhance.css';
 import './styles/counter.css';
 import './styles/wall.css';
+import './styles/memories.css';
 import './styles/feelings.css';
 import './styles/softmotion.css';
+import './styles/tour.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><App /></React.StrictMode>

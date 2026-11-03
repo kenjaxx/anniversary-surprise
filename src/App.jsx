@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { content, ENVELOPE_ANIMATION_MS } from './data/content.js';
+import { tour as tourCfg } from './data/tour.js';
 import { scrollTo, scrollToElement } from './utils/scroll.js';
 import { fireConfetti } from './utils/confetti.js';
 import useReveal from './hooks/useReveal.js';
 import useScrollProgress from './hooks/useScrollProgress.js';
 import useMusic from './hooks/useMusic.js';
+import useAutoTour from './hooks/useAutoTour.js';
 
 import Petals from './components/Petals.jsx';
 import Topbar from './components/Topbar.jsx';
@@ -15,10 +17,13 @@ import Story from './components/Story.jsx';
 import Thanks from './components/Thanks.jsx';
 import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
+import TourBar from './components/TourBar.jsx';
 
 function App() {
   const [opened, setOpened] = useState(false);
+  const [starting, setStarting] = useState(false); // envelope tapped, tour about to begin
   const [celebrated, setCelebrated] = useState(false);
+  const celebratedRef = useRef(false);
   const stageRef = useRef(null);
   const openTimer = useRef(null);
 
@@ -26,20 +31,51 @@ function App() {
   const { musicOn, musicStatus, toggleMusic } = useMusic();
   useReveal([opened, celebrated]);
 
+  // After a reload, always begin at the top (browsers otherwise restore the old scroll position).
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Pressing "Celebrate us" yourself (scrolls to the card)
+  const celebrate = () => {
+    celebratedRef.current = true;
+    setCelebrated(true);
+    fireConfetti();
+    setTimeout(() => scrollTo('celebration'), 250);
+  };
+
+  // Used by the guided tour: same thing, but the tour does its own scrolling
+  const celebrateQuietly = () => {
+    celebratedRef.current = true;
+    setCelebrated(true);
+    fireConfetti();
+  };
+
+  const tour = useAutoTour({
+    celebrate: celebrateQuietly,
+    isCelebrated: () => celebratedRef.current,
+  });
+
   useEffect(() => () => clearTimeout(openTimer.current), []);
 
   const openEnvelope = () => {
     if (opened) return;
     setOpened(true);
-    scrollToElement(stageRef.current, { block: 'center', duration: 1200 });
+    setStarting(true);
+    scrollToElement(stageRef.current, { block: 'center', duration: 1000 });
     clearTimeout(openTimer.current);
-    openTimer.current = setTimeout(() => scrollTo('together'), ENVELOPE_ANIMATION_MS);
+    openTimer.current = setTimeout(() => {
+      setStarting(false);
+      if (tourCfg.enabled) tour.start();
+      else scrollTo('together');
+    }, ENVELOPE_ANIMATION_MS);
   };
 
-  const celebrate = () => {
-    setCelebrated(true);
-    fireConfetti();
-    setTimeout(() => scrollTo('celebration'), 250);
+  // The "Play auto tour" button: opens the envelope first if she has not yet.
+  const startTour = () => {
+    if (!opened) openEnvelope();
+    else tour.restart();
   };
 
   // If the page is open when the clock hits the anniversary, celebrate automatically.
@@ -52,7 +88,11 @@ function App() {
 
   const replay = () => {
     clearTimeout(openTimer.current);
+    tour.reset();
+    window.dispatchEvent(new CustomEvent('tour:reset'));
+    celebratedRef.current = false;
     setCelebrated(false);
+    setStarting(false);
     setOpened(false);
     scrollTo('top');
   };
@@ -74,6 +114,21 @@ function App() {
       <Closing onReplay={replay} />
 
       <div className="tiny-footer"><span>♡</span> a little website, with a lot of heart <span>♡</span></div>
+
+      {tourCfg.enabled && (
+        <TourBar
+          status={tour.status}
+          index={tour.index}
+          total={tour.total}
+          hidden={starting}
+          onStart={startTour}
+          onPause={tour.pause}
+          onResume={tour.resume}
+          onSkip={tour.skip}
+          onStop={tour.stop}
+          onRestart={tour.restart}
+        />
+      )}
     </main>
   );
 }

@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, Heart } from 'lucide-react';
 import { content } from '../data/content.js';
 import SectionHeading from './SectionHeading.jsx';
 
 export default function Letter() {
   const [show, setShow] = useState(false);
+
+  // The guided tour opens the letter for her (and closes it again on replay).
+  useEffect(() => {
+    const onOpen = () => setShow(true);
+    const onReset = () => setShow(false);
+    window.addEventListener('tour:open-letter', onOpen);
+    window.addEventListener('tour:reset', onReset);
+    return () => {
+      window.removeEventListener('tour:open-letter', onOpen);
+      window.removeEventListener('tour:reset', onReset);
+    };
+  }, []);
 
   return (
     <section className="letter-section section-wrap" id="letter">

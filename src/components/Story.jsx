@@ -7,6 +7,7 @@ import MemoryModal from './MemoryModal.jsx';
 import AllMemories from './AllMemories.jsx';
 
 const items = content.moments.map((m, i) => ({
+  index: i,
   image: m.photo,
   title: m.title,
   date: m.date,
@@ -28,6 +29,26 @@ export default function Story() {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const small = useIsSmall();
+
+  // The guided tour opens "View all photos" and each photo for her.
+  useEffect(() => {
+    const onOpenAll = () => setShowAll(true);
+    const onMemory = e => setSelectedIndex(e.detail.index);
+    const onCloseMemory = () => setSelectedIndex(null);
+    const onCloseAll = () => { setSelectedIndex(null); setShowAll(false); };
+    window.addEventListener('tour:open-all', onOpenAll);
+    window.addEventListener('tour:memory', onMemory);
+    window.addEventListener('tour:close-memory', onCloseMemory);
+    window.addEventListener('tour:close-all', onCloseAll);
+    window.addEventListener('tour:reset', onCloseAll);
+    return () => {
+      window.removeEventListener('tour:open-all', onOpenAll);
+      window.removeEventListener('tour:memory', onMemory);
+      window.removeEventListener('tour:close-memory', onCloseMemory);
+      window.removeEventListener('tour:close-all', onCloseAll);
+      window.removeEventListener('tour:reset', onCloseAll);
+    };
+  }, []);
 
   const openItem = item => {
     const i = items.indexOf(item);
@@ -88,6 +109,7 @@ export default function Story() {
       {showAll && (
         <AllMemories
           items={items}
+          activeIndex={selectedIndex}
           onSelect={i => setSelectedIndex(i)}
           onClose={() => setShowAll(false)}
           escapeDisabled={selectedIndex !== null}
@@ -96,6 +118,7 @@ export default function Story() {
       {selectedIndex !== null && (
         <MemoryModal
           item={items[selectedIndex]}
+          total={items.length}
           onClose={() => setSelectedIndex(null)}
           onPrev={() => step(-1)}
           onNext={() => step(1)}

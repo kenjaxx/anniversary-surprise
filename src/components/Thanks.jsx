@@ -58,6 +58,19 @@ function FeelingBack({ item }) {
 
 export default function Thanks() {
   const small = useIsSmall();
+  // which cards are turned over, by index (the guided tour also flips them)
+  const [flipped, setFlipped] = useState({});
+
+  useEffect(() => {
+    const onFlip = e => setFlipped(f => ({ ...f, [e.detail.index]: e.detail.value }));
+    const onReset = () => setFlipped({});
+    window.addEventListener('tour:flip', onFlip);
+    window.addEventListener('tour:reset', onReset);
+    return () => {
+      window.removeEventListener('tour:flip', onFlip);
+      window.removeEventListener('tour:reset', onReset);
+    };
+  }, []);
 
   return (
     <section className="reasons section-wrap" id="reasons">
@@ -75,6 +88,8 @@ export default function Thanks() {
             ariaLabel={`${item.word}. Flip to read why.`}
             front={<FeelingFront item={item} index={i} />}
             back={<FeelingBack item={item} />}
+            flipped={!!flipped[i]}
+            onFlipChange={v => setFlipped(f => ({ ...f, [i]: v }))}
             width={small ? 160 : 260}
             height={small ? 250 : 380}
             radius={small ? 18 : 22}

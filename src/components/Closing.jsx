@@ -1,9 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 import { content } from '../data/content.js';
 
 export default function Closing({ onReplay }) {
   const [secret, setSecret] = useState(false);
+
+  // The guided tour reveals the secret note at the very end.
+  useEffect(() => {
+    const onSecret = () => setSecret(true);
+    const onReset = () => setSecret(false);
+    window.addEventListener('tour:secret', onSecret);
+    window.addEventListener('tour:reset', onReset);
+    return () => {
+      window.removeEventListener('tour:secret', onSecret);
+      window.removeEventListener('tour:reset', onReset);
+    };
+  }, []);
 
   const replay = () => { setSecret(false); onReplay(); };
 
