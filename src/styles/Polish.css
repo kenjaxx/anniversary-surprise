@@ -115,3 +115,27 @@ main{overflow:visible;overflow-x:clip}
   .gate-btn{animation:none}
   .intro-gate{transition-duration:.01ms}
 }
+
+/* ---------- keep the tour bar clear of the host's "Powered by" badge ---------- */
+:root{--tour-lift:0px}
+
+@media (max-width:820px),(pointer:coarse){
+  :root{--tour-lift:66px} /* set to 0px if the badge is gone */
+
+  /* lift the tour bar / play button above the badge */
+  .tour-bar,.tour-fab{
+    bottom:calc(max(14px,env(safe-area-inset-bottom)) + var(--tour-lift));
+  }
+
+  /* keep the photo popup caption and the closing footer clear of the lifted bar */
+  .memory-modal{padding-bottom:calc(100px + var(--tour-lift))}
+  .final-section footer{padding-bottom:calc(88px + var(--tour-lift) + env(safe-area-inset-bottom))}
+  .am-end{padding-bottom:calc(150px + var(--tour-lift))}
+}
+
+/* small phones: make the bar a little tighter so nothing runs off the edge */
+@media (max-width:420px){
+  .tour-bar{gap:6px;padding:6px}
+  .tour-main{padding:9px 13px}
+  .tour-icon{width:36px;height:36px}
+}
