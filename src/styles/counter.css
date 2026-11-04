@@ -1,13 +1,158 @@
-/* ---------- time-together counter ---------- */
-.counter-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;max-width:640px;margin:0 auto 18px;position:relative;z-index:2}
-.counter-box{background:#fff9f5;border:1px solid #f0d3ca;border-radius:16px;padding:16px 4px;box-shadow:0 10px 24px -16px #a35c4d77}
-.counter-box strong{display:block;font:500 clamp(24px,4vw,36px)/1 var(--serif);color:var(--rose-dark);font-variant-numeric:tabular-nums}
-.counter-box span{display:block;margin-top:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.countdown-line{margin:0 0 26px;font:italic 17px var(--serif);color:var(--wine);position:relative;z-index:2}
-.countdown-line.done{color:var(--rose-dark)}
+/* counter.css: the "One whole year" card (blush card + polaroid clothesline).
+   Everything is scoped under .anniv-card, so it wins over the older .invitation-card,
+   .counter-grid and .counter-box rules in styles.css, enhance.css and Polish.css.
+   Only transform / opacity are animated, so it stays smooth. */
+
+/* ---------- the card ---------- */
+.invitation-card.anniv-card{
+  max-width:720px;min-height:0;padding:58px 26px 46px;overflow:hidden;
+  background:radial-gradient(circle at 20% 0,#ffe9dc,transparent 55%),#fff3ea;
+  border:1px solid #f0d3ca;border-radius:26px;
+  box-shadow:0 24px 60px -30px rgba(160,70,80,.5);
+}
+.invitation-card.anniv-card::before{content:none}
+
+.anniv-card .anniv-body{position:relative;z-index:1}
+.anniv-card .card-sparkle{z-index:1;animation:annivTwinkle 4s ease-in-out infinite}
+@keyframes annivTwinkle{
+  0%,100%{opacity:.45;transform:scale(.85) rotate(0)}
+  50%{opacity:1;transform:scale(1.15) rotate(20deg)}
+}
+
+/* ---------- petals drifting behind the content ---------- */
+.anniv-card .anniv-fx{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;border-radius:inherit}
+.anniv-card .anniv-fx i{
+  position:absolute;top:0;height:100%;left:var(--l);width:1em;
+  opacity:0;animation:annivFall var(--dur) linear var(--dl) infinite;
+}
+.anniv-card .anniv-fx i::before{
+  content:attr(data-g);position:absolute;top:-30px;left:0;font-style:normal;
+  font-size:var(--s);color:#eaa0ac;
+  animation:annivSpin var(--dur) linear var(--dl) infinite;
+}
+@keyframes annivFall{
+  0%{transform:translate(0,0);opacity:0}
+  10%{opacity:.6}
+  50%{transform:translate(24px,calc(50% + 30px))}
+  90%{opacity:.5}
+  100%{transform:translate(-20px,calc(100% + 60px));opacity:0}
+}
+@keyframes annivSpin{to{transform:rotate(320deg)}}
+
+/* ---------- content rises in one piece at a time, once the card scrolls into view ---------- */
+.anniv-card.visible .rise{
+  animation:annivRise .9s cubic-bezier(.22,.7,.25,1) calc(var(--d,0) * 110ms + 250ms) backwards;
+}
+@keyframes annivRise{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:none}
+}
+
+/* ---------- text ---------- */
+.anniv-card .heart-bloom{margin:18px auto 8px}
+.anniv-card .anniv-h2{font:500 32px var(--serif);margin:0 0 6px}
+.anniv-card .anniv-h2 span{color:var(--rose)}
+.anniv-card .anniv-sub{font-size:14px;color:#947c79;margin:0 0 18px}
+.anniv-card .anniv-h3{
+  font:500 clamp(26px,4.6vw,40px)/1.2 var(--serif);
+  max-width:520px;margin:0 auto 30px;color:var(--ink);
+}
+
+/* ---------- the clothesline ---------- */
+.anniv-card .clothesline{position:relative;max-width:660px;margin:0 auto 20px}
+.anniv-card .counter-grid{
+  display:flex;gap:10px;max-width:none;margin:0;position:static;z-index:auto;
+}
+.anniv-card .counter-row{
+  position:relative;flex:1 1 0;min-width:0;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding-top:24px;
+}
+/* the line itself: a gentle sag that runs off the edge of the card */
+.anniv-card .counter-row::before{
+  content:'';position:absolute;top:6px;left:-30px;right:-5px;height:12px;
+  border-bottom:2px solid #c9a063;border-radius:0 0 50% 50% / 0 0 100% 100%;
+}
+.anniv-card .counter-row:last-child::before{left:-5px;right:-30px}
+
+/* ---------- the polaroids ---------- */
+.anniv-card .counter-box{
+  position:relative;z-index:1;padding:20px 4px 14px;border:0;border-radius:4px;
+  background:#fffdf8;box-shadow:0 12px 22px -12px #70433caa;
+  transform-origin:50% -10px;
+  animation:annivSwing 4.2s ease-in-out infinite;
+  animation-delay:calc(var(--i,0) * -.55s);
+}
+/* the little wooden peg */
+.anniv-card .counter-box::before{
+  content:'';position:absolute;top:-12px;left:50%;width:9px;height:20px;margin-left:-4px;
+  border-radius:2px;background:linear-gradient(#e9b872,#c9a063);box-shadow:0 2px 4px rgba(0,0,0,.2);
+}
+@keyframes annivSwing{
+  0%,100%{transform:rotate(-2.6deg)}
+  50%{transform:rotate(2.6deg)}
+}
+.anniv-card .counter-box strong{
+  display:block;font:500 clamp(22px,4vw,36px)/1 var(--serif);
+  color:var(--rose-dark);font-variant-numeric:tabular-nums;
+  animation:annivPop .5s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes annivPop{
+  0%{transform:translateY(-7px) scale(1.2);opacity:.3}
+  100%{transform:none;opacity:1}
+}
+.anniv-card .counter-box span{
+  display:block;margin-top:8px;font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);
+}
+
+/* ---------- countdown, button, whisper ---------- */
+.anniv-card .countdown-line{margin:0 0 24px;font:italic 17px var(--serif);color:var(--rose-dark);position:relative;z-index:2}
+.anniv-card .countdown-line.done{color:var(--rose-dark)}
+
+.anniv-card .anniv-cta{display:flex;justify-content:center}
+.anniv-card .yes-button::after{
+  transition:none;animation:annivShine 3.6s ease-in-out infinite;
+}
+@keyframes annivShine{
+  0%,55%{left:-70%}
+  100%{left:140%}
+}
+
+.anniv-card .anniv-whisper{margin-top:26px}
+.anniv-card .anniv-whisper .whisper{
+  margin:0;font:21px var(--script);color:#8d7774;transform:rotate(-2deg);
+}
+
+/* ---------- the burst of hearts when she presses "Celebrate us" ---------- */
+.anniv-card .anniv-fly{
+  position:absolute;z-index:5;pointer-events:none;color:#f0798c;
+  transform:translate(-50%,-50%);
+  animation:annivFly 1.6s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes annivFly{
+  to{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(1.2);opacity:0}
+}
+
+/* ---------- phones: two lines of three ---------- */
 @media(max-width:560px){
-  .counter-grid{grid-template-columns:repeat(3,1fr);gap:8px}
-  .counter-box{padding:12px 2px;border-radius:12px}
-  .counter-box span{font-size:9px;letter-spacing:.08em}
-  .countdown-line{font-size:15px}
+  .invitation-card.anniv-card{padding:50px 14px 38px;border-radius:22px}
+  .anniv-card .anniv-h2{font-size:27px}
+  .anniv-card .anniv-h3{font-size:27px;margin-bottom:26px}
+  .anniv-card .counter-grid{flex-direction:column;gap:4px}
+  .anniv-card .counter-row{gap:8px}
+  .anniv-card .counter-box{padding:18px 2px 12px}
+  .anniv-card .counter-box strong{font-size:clamp(24px,8vw,32px)}
+  .anniv-card .counter-box span{font-size:9px;letter-spacing:.08em}
+  .anniv-card .countdown-line{font-size:15px}
+  .anniv-card .anniv-whisper .whisper{font-size:19px}
+}
+
+/* ---------- reduce motion: everything stays still and visible ---------- */
+@media(prefers-reduced-motion:reduce){
+  .anniv-card .anniv-fx{display:none}
+  .anniv-card.visible .rise{animation:none}
+  .anniv-card .counter-box,
+  .anniv-card .counter-box strong,
+  .anniv-card .card-sparkle,
+  .anniv-card .yes-button::after{animation:none}
 }
