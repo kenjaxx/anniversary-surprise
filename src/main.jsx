@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
+
 import './styles/styles.css';
 import './styles/enhance.css';
 import './styles/counter.css';
@@ -11,19 +13,29 @@ import './styles/softmotion.css';
 import './styles/tour.css';
 import './styles/closing.css';
 import './styles/datePicker.css';
-import './styles/Polish.css';  // mobile fixes
-import './styles/gate.css';    // the "Tap the seal to begin" intro
-import './styles/navbar.css';  // the love-letter strip navbar (must be last)
+import './styles/Polish.css';
+import './styles/gate.css';
+import './styles/navbar.css';
 
-// This site doesn't use a service worker. In dev, remove any worker (and its caches)
-// left over from another project that ran on the same localhost port.
+// New generative tree styling
+import './styles/generative-tree.css';
+
+// This site doesn't use a service worker.
+// In dev, remove any worker and caches left over from another project.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+  navigator.serviceWorker.getRegistrations().then(regs =>
+    regs.forEach(r => r.unregister())
+  );
+
   if ('caches' in window) {
-    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    caches.keys().then(keys =>
+      keys.forEach(k => caches.delete(k))
+    );
   }
 }
 
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode><App /></React.StrictMode>
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
 );

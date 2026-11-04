@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Images, ArrowRight } from 'lucide-react';
 import { content, photoFallbacks } from '../data/content.js';
@@ -5,6 +6,7 @@ import SectionHeading from './SectionHeading.jsx';
 import DriftWall from './DriftWall.jsx';
 import MemoryModal from './MemoryModal.jsx';
 import AllMemories from './AllMemories.jsx';
+import GenerativeTreeSection from './GenerativeTreeSection.jsx';
 
 const items = content.moments.map((m, i) => ({
   index: i,
@@ -17,11 +19,15 @@ const items = content.moments.map((m, i) => ({
 
 function useIsSmall(breakpoint = 640) {
   const [small, setSmall] = useState(() => window.innerWidth < breakpoint);
+
   useEffect(() => {
     const onResize = () => setSmall(window.innerWidth < breakpoint);
+
     window.addEventListener('resize', onResize);
+
     return () => window.removeEventListener('resize', onResize);
   }, [breakpoint]);
+
   return small;
 }
 
@@ -30,17 +36,23 @@ export default function Story() {
   const [showAll, setShowAll] = useState(false);
   const small = useIsSmall();
 
-  // The guided tour opens "View all photos" and each photo for her.
+  // Guided tour events
   useEffect(() => {
     const onOpenAll = () => setShowAll(true);
     const onMemory = e => setSelectedIndex(e.detail.index);
     const onCloseMemory = () => setSelectedIndex(null);
-    const onCloseAll = () => { setSelectedIndex(null); setShowAll(false); };
+
+    const onCloseAll = () => {
+      setSelectedIndex(null);
+      setShowAll(false);
+    };
+
     window.addEventListener('tour:open-all', onOpenAll);
     window.addEventListener('tour:memory', onMemory);
     window.addEventListener('tour:close-memory', onCloseMemory);
     window.addEventListener('tour:close-all', onCloseAll);
     window.addEventListener('tour:reset', onCloseAll);
+
     return () => {
       window.removeEventListener('tour:open-all', onOpenAll);
       window.removeEventListener('tour:memory', onMemory);
@@ -54,7 +66,12 @@ export default function Story() {
     const i = items.indexOf(item);
     if (i !== -1) setSelectedIndex(i);
   };
-  const step = delta => setSelectedIndex(prev => (prev + delta + items.length) % items.length);
+
+  const step = delta => {
+    setSelectedIndex(prev =>
+      (prev + delta + items.length) % items.length
+    );
+  };
 
   return (
     <>
@@ -65,9 +82,11 @@ export default function Story() {
           subtitle="A few moments from this year I want to keep close."
         />
 
-        {/* .wall-bleed lets the wall be wider than the normal content column */}
         <div className="wall-bleed">
-          <div className="wall-stage reveal" style={{ height: small ? 540 : 720 }}>
+          <div
+            className="wall-stage reveal"
+            style={{ height: small ? 540 : 720 }}
+          >
             <DriftWall
               items={items}
               columns={small ? 3 : 5}
@@ -86,26 +105,50 @@ export default function Story() {
               overlayColor="#2a1420"
               onSelect={openItem}
             />
-            <p className="wall-hint">{small ? 'tap a photo' : 'hover to pause · click to open'} ♡</p>
+
+            <p className="wall-hint">
+              {small
+                ? 'tap a photo'
+                : 'hover to pause · click to open'} ♡
+            </p>
           </div>
         </div>
 
         <div className="wall-actions">
-          <span className="wall-actions-lead">Want to see every photo, uncropped?</span>
-          <button className="view-all-button" onClick={() => setShowAll(true)}>
-            <span className="view-all-icon"><Images size={22} strokeWidth={1.7} /></span>
+          <span className="wall-actions-lead">
+            Want to see every photo, uncropped?
+          </span>
+
+          <button
+            className="view-all-button"
+            onClick={() => setShowAll(true)}
+          >
+            <span className="view-all-icon">
+              <Images size={22} strokeWidth={1.7} />
+            </span>
+
             <span className="view-all-text">
               <strong>View all photos</strong>
               <small>{items.length} moments, shown in full</small>
             </span>
-            <ArrowRight className="view-all-arrow" size={20} strokeWidth={2} />
+
+            <ArrowRight
+              className="view-all-arrow"
+              size={20}
+              strokeWidth={2}
+            />
           </button>
         </div>
 
-        <p className="section-footnote">Every little moment belongs in our story. <span>♡</span></p>
+        <p className="section-footnote">
+          Every little moment belongs in our story. <span>♡</span>
+        </p>
       </section>
 
-      {/* Rendered outside the .reveal wrapper: a transformed parent would break position:fixed */}
+      {/* New cinematic tree section */}
+      <GenerativeTreeSection />
+
+      {/* Existing photo gallery modals */}
       {showAll && (
         <AllMemories
           items={items}
@@ -115,6 +158,7 @@ export default function Story() {
           escapeDisabled={selectedIndex !== null}
         />
       )}
+
       {selectedIndex !== null && (
         <MemoryModal
           item={items[selectedIndex]}
