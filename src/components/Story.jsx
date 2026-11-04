@@ -72,7 +72,7 @@ export default function Story() {
               items={items}
               columns={small ? 3 : 5}
               tileWidth={small ? 170 : 300}
-              tileHeight={small ? 126 : 200}
+              tileHeight={small ? 130 : 225}
               gap={small ? 14 : 20}
               radius={small ? 12 : 16}
               tilt={small ? 12 : 16}

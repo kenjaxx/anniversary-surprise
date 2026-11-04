@@ -25,7 +25,7 @@ const GATE_FADE_WAIT_MS = 700; // let the "Tap to begin" screen mostly fade out 
 
 function App() {
   const [opened, setOpened] = useState(false);
-  const [starting, setStarting] = useState(false); // envelope tapped, tour about to begin
+  const [starting, setStarting] = useState(false); // gate tapped / envelope tapped, tour about to begin
   const [celebrated, setCelebrated] = useState(false);
   const celebratedRef = useRef(false);
   const stageRef = useRef(null);
@@ -91,6 +91,8 @@ function App() {
   const beginFromGate = () => {
     startMusic();
     if (!tourCfg.enabled) return;
+    // Keep the tour controls out of sight from this very first tap (no flash while the gate fades).
+    setStarting(true);
     clearTimeout(gateTimer.current);
     gateTimer.current = setTimeout(openEnvelope, GATE_FADE_WAIT_MS);
   };
@@ -142,7 +144,6 @@ function App() {
           total={tour.total}
           hidden={starting}
           onStart={startTour}
-          onPause={tour.pause}
           onResume={tour.resume}
           onSkip={tour.skip}
           onStop={tour.stop}

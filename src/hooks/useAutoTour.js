@@ -208,17 +208,20 @@ export default function useAutoTour({ celebrate, isCelebrated }) {
     setSt('idle');
   }, [cancelAll, setSt]);
 
-  // While playing: if she scrolls, touches to scroll, or uses the keyboard, pause right away.
+  // While playing the tour controls are hidden. If she scrolls, touches the screen,
+  // clicks, or uses the keyboard, pause right away: that is what brings the controls back.
   useEffect(() => {
     if (status !== 'playing') return undefined;
     const keys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
     const onKey = e => { if (keys.includes(e.key)) pause(); };
     window.addEventListener('wheel', pause, { passive: true });
     window.addEventListener('touchmove', pause, { passive: true });
+    window.addEventListener('pointerdown', pause, { passive: true });
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('wheel', pause);
       window.removeEventListener('touchmove', pause);
+      window.removeEventListener('pointerdown', pause);
       window.removeEventListener('keydown', onKey);
     };
   }, [status, pause]);

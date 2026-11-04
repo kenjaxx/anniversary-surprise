@@ -1,11 +1,19 @@
-import { Pause, Play, RotateCcw, SkipForward, X } from 'lucide-react';
+import { Play, RotateCcw, SkipForward, X } from 'lucide-react';
 
+// The bar is only visible when it is useful:
+//   - before the tour starts (a "Play auto tour" button)
+//   - when she interrupts the tour by scrolling or tapping (Resume)
+//   - when the tour has finished (Watch again)
+// While the tour is playing there is nothing on screen, so it never covers the show.
 export default function TourBar({
   status, index, total, hidden,
-  onStart, onPause, onResume, onSkip, onStop, onRestart,
+  onStart, onResume, onSkip, onStop, onRestart,
 }) {
   // Right after she taps the envelope, the tour is about to start by itself.
   if (hidden) return null;
+
+  // Playing: stay out of the way completely.
+  if (status === 'playing') return null;
 
   // Not started yet (also what she sees after a reload): a button to begin the tour.
   if (status === 'idle') {
@@ -25,15 +33,14 @@ export default function TourBar({
     );
   }
 
-  const playing = status === 'playing';
   const done = status === 'done';
-  const note = playing ? 'Sit back, I’ll show you around ♡' : done ? 'That’s everything, my love ♡' : 'Paused. Scroll freely';
+  const note = done ? 'That’s everything, my love ♡' : 'Paused. Scroll freely';
 
   return (
     <div className="tour-bar" role="group" aria-label="Guided tour controls">
-      <button className="tour-main" onClick={playing ? onPause : done ? onRestart : onResume}>
-        {playing ? <Pause size={16} /> : done ? <RotateCcw size={16} /> : <Play size={16} />}
-        <span>{playing ? 'Pause' : done ? 'Watch again' : 'Resume'}</span>
+      <button className="tour-main" onClick={done ? onRestart : onResume}>
+        {done ? <RotateCcw size={16} /> : <Play size={16} />}
+        <span>{done ? 'Watch again' : 'Resume'}</span>
       </button>
 
       <span className="tour-note">{note}</span>

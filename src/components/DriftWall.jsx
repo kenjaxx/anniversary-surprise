@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import './DriftWall.css';
 
 const DEFAULT_ITEMS = Array.from({ length: 15 }, (_, i) => {
@@ -10,6 +10,11 @@ const DEFAULT_ITEMS = Array.from({ length: 15 }, (_, i) => {
   };
 });
 
+// How tall the tilted plane is, compared with the wall. The plane is rotated, scaled and pushed
+// back in 3D, so the area you can see is taller than the wall itself. If this is too small,
+// the lower part of some columns runs out of tiles and shows an empty dark patch.
+const PLANE_SPAN = 1.7;
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,6 +22,79 @@ const columnFactor = (index, variance) => {
   const pseudo = ((index * 0.6180339887 + 0.35) % 1) * 2 - 1;
   return 1 + variance * pseudo;
 };
+
+// One tile. Memoized, so hovering one photo does not re-render every other tile.
+// The photo is shown whole (object-fit: contain) over a blurred copy of itself, so nothing is cropped.
+const Tile = memo(function Tile({ item, id, col, index, active, onActivate, onRelease, onKeySelect }) {
+  const [src, setSrc] = useState(item.image);
+  useEffect(() => {
+    setSrc(item.image);
+  }, [item.image]);
+
+  // fall back to a stock photo if the local file is missing
+  const onError = () => {
+    if (item.fallback && src !== item.fallback) setSrc(item.fallback);
+  };
+
+  const inner = (
+    <span className="drift-wall__inner">
+      <img
+        className="drift-wall__bg"
+        src={src}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        onError={onError}
+      />
+      <img
+        className="drift-wall__img"
+        src={src}
+        alt={item.title ?? ''}
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        onError={onError}
+      />
+      <span className="drift-wall__overlay" aria-hidden="true" />
+      {item.title && <span className="drift-wall__caption" aria-hidden="true">{item.title}</span>}
+    </span>
+  );
+
+  const commonProps = {
+    className: `drift-wall__tile${active ? ' is-active' : ''}`,
+    'data-tile-id': id,
+    'data-col': col,
+    'data-index': index, // used by the wall-level click handler
+    onFocus: () => onActivate(id, col),
+    onBlur: onRelease
+  };
+
+  if (item.href) {
+    return (
+      <a href={item.href} target="_blank" rel="noreferrer noopener" {...commonProps}>
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <div
+      tabIndex={0}
+      role="button"
+      aria-label={item.title ?? 'tile'}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onKeySelect(item);
+        }
+      }}
+      {...commonProps}
+    >
+      {inner}
+    </div>
+  );
+});
 
 const DriftWall = ({
   items = DEFAULT_ITEMS,
@@ -63,6 +141,10 @@ const DriftWall = ({
   const activeIdRef = useRef(null);
   const [reduced, setReduced] = useState(false);
 
+  const onSelectRef = useRef(onSelect);
+  onSelectRef.current = onSelect;
+  const handleKeySelect = useCallback(item => onSelectRef.current?.(item), []);
+
   useEffect(() => {
     setReduced(prefersReducedMotion());
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -83,23 +165,28 @@ const DriftWall = ({
     return () => io.disconnect();
   }, []);
 
+  // Deal the photos out to the columns, remembering each photo's position in the original list.
   const columnItems = useMemo(() => {
     const cols = Array.from({ length: columns }, () => []);
-    items.forEach((item, i) => cols[i % columns].push(item));
-    return cols.map(col => (col.length ? col : items.slice(0, 1)));
+    items.forEach((item, i) => cols[i % columns].push({ item, index: i }));
+    return cols.map(col => (col.length ? col : [{ item: items[0], index: 0 }]));
   }, [items, columns]);
 
+  // The plane has a fixed height, so every column is measured against the same window.
+  const planeHeight = Math.ceil(containerHeight * PLANE_SPAN);
+
+  // Every column gets enough copies to fill the whole plane at any scroll offset.
   const columnMeta = useMemo(() => {
     const unit = tileHeight + gap;
     return columnItems.map(col => {
       const copyHeight = Math.max(unit, col.length * unit);
-      const copies = Math.max(2, Math.ceil((containerHeight * 1.6) / copyHeight) + 1);
+      const copies = Math.max(2, Math.ceil(planeHeight / copyHeight) + 1);
       return { copyHeight, copies };
     });
-  }, [columnItems, tileHeight, gap, containerHeight]);
+  }, [columnItems, tileHeight, gap, planeHeight]);
 
   useLayoutEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) return undefined;
     const ro = new ResizeObserver(([entry]) => {
       setContainerHeight(entry.contentRect.height || 600);
     });
@@ -252,13 +339,13 @@ const DriftWall = ({
   // so it no longer matters which exact element the click landed on.
   const handleClick = useCallback(
     e => {
-      if (!onSelect) return;
+      if (!onSelectRef.current) return;
       const tile = resolveTile(e.clientX, e.clientY);
       if (!tile) return;
       const item = items[Number(tile.dataset.index)];
-      if (item && !item.href) onSelect(item);
+      if (item && !item.href) onSelectRef.current(item);
     },
-    [onSelect, resolveTile, items]
+    [resolveTile, items]
   );
 
   const handlePointerLeaveWall = useCallback(() => {
@@ -284,55 +371,6 @@ const DriftWall = ({
     [tileWidth, tileHeight, gap, radius, perspective, lift, dim, grayscale, overlayColor, fade, style]
   );
 
-  const renderTile = (item, id, colIndex) => {
-    const inner = (
-      <span className="drift-wall__inner">
-        <img
-          src={item.image}
-          alt={item.title ?? ''}
-          loading="lazy"
-          decoding="async"
-          draggable={false}
-          // fall back to a stock photo if the local file is missing
-          onError={e => {
-            if (item.fallback && e.currentTarget.src !== item.fallback) e.currentTarget.src = item.fallback;
-          }}
-        />
-        <span className="drift-wall__overlay" aria-hidden="true" />
-        {item.title && <span className="drift-wall__caption" aria-hidden="true">{item.title}</span>}
-      </span>
-    );
-    const commonProps = {
-      className: `drift-wall__tile${activeId === id ? ' is-active' : ''}`,
-      'data-tile-id': id,
-      'data-col': colIndex,
-      'data-index': items.indexOf(item), // used by the wall-level click handler
-      onFocus: () => activate(id, colIndex),
-      onBlur: release
-    };
-    if (item.href) {
-      return (
-        <a key={id} href={item.href} target="_blank" rel="noreferrer noopener" {...commonProps}>
-          {inner}
-        </a>
-      );
-    }
-    return (
-      <div
-        key={id}
-        tabIndex={0}
-        role="button"
-        aria-label={item.title ?? 'tile'}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect?.(item); }
-        }}
-        {...commonProps}
-      >
-        {inner}
-      </div>
-    );
-  };
-
   const rootClass = ['drift-wall', reduced ? 'drift-wall--reduced' : '', className].filter(Boolean).join(' ');
 
   return (
@@ -350,7 +388,7 @@ const DriftWall = ({
       role="group"
       aria-label="Drifting wall of memories"
     >
-      <div ref={planeRef} className="drift-wall__plane">
+      <div ref={planeRef} className="drift-wall__plane" style={{ height: planeHeight }}>
         {columnItems.map((col, c) => {
           const meta = columnMeta[c];
           const copies = Array.from({ length: meta.copies });
@@ -358,7 +396,22 @@ const DriftWall = ({
             <div className="drift-wall__col" key={`col-${c}`}>
               <div className="drift-wall__track" ref={el => (trackRefs.current[c] = el)}>
                 {copies.map((_, copyIndex) =>
-                  col.map((item, itemIndex) => renderTile(item, `${c}-${copyIndex}-${itemIndex}`, c))
+                  col.map(({ item, index }, itemIndex) => {
+                    const id = `${c}-${copyIndex}-${itemIndex}`;
+                    return (
+                      <Tile
+                        key={id}
+                        item={item}
+                        id={id}
+                        col={c}
+                        index={index}
+                        active={activeId === id}
+                        onActivate={activate}
+                        onRelease={release}
+                        onKeySelect={handleKeySelect}
+                      />
+                    );
+                  })
                 )}
               </div>
             </div>
