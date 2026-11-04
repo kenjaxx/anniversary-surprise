@@ -21,7 +21,7 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
-const GATE_FADE_WAIT_MS = 700; // let the "Tap to begin" screen mostly fade out before the show starts
+const GATE_FADE_WAIT_MS = 3200; // was 1800: the card-opening intro needs a little longer to play out
 
 function App() {
   const [opened, setOpened] = useState(false);

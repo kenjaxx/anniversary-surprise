@@ -1,0 +1,199 @@
+/* gate.css: the folded "Blush Watercolor" greeting card intro. Imported last in main.jsx.
+   Everything is sized from --w (the card width), so it scales on any screen.
+   Desktop: the cover swings open in real 3D.
+   Phones / touch screens / narrow windows: a simple 2D fold (no 3D = no glitches).
+   Only transform / opacity are animated, so it stays smooth. */
+
+.ig{
+  --w:min(78vw,320px,45vh);   /* card width: change 320px to make the card bigger / smaller */
+  --u:calc(var(--w) / 28);    /* one design unit */
+  --shift:0px;
+  --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .3 0 0 0 .45 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+
+  position:fixed;inset:0;z-index:100;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:max(20px,env(safe-area-inset-top)) 20px max(20px,env(safe-area-inset-bottom));
+  background:radial-gradient(ellipse at 50% 0,#6b3a4e 0,#2b1824 78%);
+}
+/* phones: use the visible height (the address bar makes plain "vh" too tall) */
+@supports (height:100dvh){.ig{--w:min(78vw,320px,45dvh)}}
+/* on wide screens the card slides right as it opens, so the open spread ends up centered */
+@media(min-width:760px){.ig{--shift:calc(var(--w) / 2)}}
+
+/* after the tap: the gate fades once the card has opened and she has seen "Welcome in." */
+.ig.is-leaving{pointer-events:none;animation:igOut .9s ease 3.4s forwards}
+@keyframes igOut{to{opacity:0;visibility:hidden}}
+
+/* ---------- candlelight + dust ---------- */
+.ig-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 55% at 50% 50%,rgba(255,185,125,.3),transparent 72%);
+  animation:igFlick 3.6s ease-in-out infinite alternate;
+}
+@keyframes igFlick{0%{opacity:.55;transform:scale(.97)}40%{opacity:1}100%{opacity:.8;transform:scale(1.06)}}
+@media(max-width:820px){
+  .ig-glow{background:radial-gradient(ellipse 95% 60% at 50% 50%,rgba(255,185,125,.3),transparent 72%)}
+}
+
+.ig-dust{position:absolute;inset:0;pointer-events:none;z-index:1}
+.ig-dust i{
+  position:absolute;bottom:-16px;border-radius:50%;opacity:0;
+  background:radial-gradient(circle,#ffe2b0,rgba(255,200,130,0) 70%);
+  animation:igUp linear infinite;
+}
+@keyframes igUp{
+  0%{transform:translate3d(0,0,0);opacity:0}
+  15%{opacity:.8}
+  100%{transform:translate3d(var(--dx),-105vh,0);opacity:0}
+}
+@media(max-width:820px){.ig-dust i:nth-child(n+9){display:none}}
+
+/* ---------- the card ---------- */
+.ig-stage{
+  position:relative;z-index:2;perspective:calc(var(--w) * 5);
+  animation:igRise 1.4s cubic-bezier(.22,.7,.25,1) .2s both,igFloat 6s ease-in-out 1.8s infinite alternate;
+}
+@keyframes igRise{from{opacity:0;transform:translateY(calc(var(--u) * 2.2))}to{opacity:1;transform:none}}
+@keyframes igFloat{to{transform:translateY(-6px)}}
+
+.ig-book{position:relative;width:var(--w);height:calc(var(--w) * 38 / 28);transform-style:preserve-3d}
+.ig-cover{
+  position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;
+  transform:translateZ(2px);   /* sits clearly in front of the page, so the two layers never flicker */
+}
+
+.ig-face{
+  position:absolute;inset:0;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:calc(var(--u) * 3) calc(var(--u) * 2);
+  box-shadow:0 calc(var(--u) * 2) calc(var(--u) * 4) calc(var(--u) * -1.5) rgba(0,0,0,.6);
+  backface-visibility:hidden;-webkit-backface-visibility:hidden;
+}
+.ig-face::before{
+  content:'';position:absolute;inset:calc(var(--u) * .9);border:1px solid var(--bd);pointer-events:none;z-index:2;
+}
+.ig-face::after{
+  content:'';position:absolute;inset:0;background:var(--noise);opacity:.35;pointer-events:none;z-index:3;
+}
+
+/* inside pages: warm blush paper */
+.ig-page,.ig-back{background:#fdf5f0;--bd:#e0b3ad}
+.ig-page{backface-visibility:visible;-webkit-backface-visibility:visible;transform:translateZ(-2px)}
+.ig-back{transform:rotateY(180deg)}
+
+/* the cover: soft watercolor washes of blush and peach */
+.ig-front{
+  --bd:#c98f87;
+  background:
+    radial-gradient(circle at 18% 14%,#f3c9cf,transparent 55%),
+    radial-gradient(circle at 88% 84%,#f0d3b8,transparent 55%),
+    radial-gradient(circle at 72% 28%,#ecc0ca,transparent 45%),
+    #fbefe9;
+  cursor:pointer;
+}
+.ig-sprig{
+  position:absolute;z-index:1;pointer-events:none;color:#c98f87;
+  width:calc(var(--u) * 15);height:calc(var(--u) * 15);
+}
+.ig-sprig.s1{top:calc(var(--u) * 1.4);left:calc(var(--u) * 1.2)}
+.ig-sprig.s2{bottom:calc(var(--u) * 1.4);right:calc(var(--u) * 1.2);transform:rotate(180deg)}
+
+.ig-lbl{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center}
+
+/* ---------- type ---------- */
+.ig-eb{font:italic 400 calc(var(--u) * 1.45)/1.3 'Cormorant Garamond',Georgia,serif;color:#b0626f}
+.ig-tt{
+  font:italic 400 calc(var(--u) * 3.06)/1.15 'Playfair Display',serif;color:#5a2f3a;
+  margin:calc(var(--u) * .8) 0 calc(var(--u) * 1);
+}
+.ig-nt{font:italic 400 calc(var(--u) * 1.45)/1.45 'Cormorant Garamond',Georgia,serif;color:#5a2f3a;opacity:.8;margin:0}
+.ig-orn{font-size:calc(var(--u) * 3);color:#e0a1a8;margin-bottom:calc(var(--u) * 1.4);line-height:1}
+.ig-cta{
+  font:500 max(10px,calc(var(--u) * .85)) 'DM Sans',sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#b0626f;
+}
+
+/* ---------- the dusty-rose wax seal (the button) ---------- */
+.ig-sealwrap{position:relative;margin:calc(var(--u) * 2) 0 calc(var(--u) * 1.4)}
+.ig-seal{
+  position:relative;display:grid;place-items:center;
+  width:calc(var(--u) * 6.4);height:calc(var(--u) * 6.4);padding:0;border:0;border-radius:50%;cursor:pointer;
+  font:400 calc(var(--u) * 2.1) 'DM Sans',sans-serif;color:#fff1ee;
+  background:radial-gradient(circle at 35% 30%,#e0a1a8,#b0626f 70%);
+  box-shadow:0 calc(var(--u) * .8) calc(var(--u) * 1.2) calc(var(--u) * -.3) rgba(90,30,45,.5);
+  -webkit-tap-highlight-color:transparent;
+  animation:igBreath 4s ease-in-out 1.6s infinite;
+}
+.ig-seal:focus-visible{outline:2px solid #b0626f;outline-offset:6px}
+.ig-seal::after{
+  content:'';position:absolute;inset:calc(var(--u) * .7);border:1px solid rgba(255,241,238,.4);border-radius:50%;
+}
+/* a faint ring that ripples out from the seal */
+.ig-seal::before{
+  content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(201,143,135,.9);opacity:0;
+  animation:igRing 3s ease-out 2s infinite;
+}
+/* warm glow that bursts when she taps */
+.ig-burst{
+  position:absolute;inset:calc(var(--u) * -6);border-radius:50%;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(255,225,200,.95),transparent 65%);
+}
+
+/* ---------- the "sound" note ---------- */
+.ig-sound{
+  position:relative;z-index:2;margin:22px 0 0;display:flex;align-items:center;gap:7px;
+  font:italic 400 16px 'Cormorant Garamond',Georgia,serif;color:#e3c6bf;
+  animation:igFade 1.2s ease 1.6s both;
+}
+
+/* ---------- after the tap (desktop: 3D swing) ---------- */
+.ig.is-leaving .ig-seal{animation:igSealOut .9s ease forwards}
+.ig.is-leaving .ig-seal::before{display:none}
+.ig.is-leaving .ig-burst{animation:igGlow 1.8s ease-out .2s both}
+.ig.is-leaving .ig-cta,.ig.is-leaving .ig-sound{animation:igGone .5s ease forwards}
+.ig.is-leaving .ig-cover{animation:igOpen 1.7s cubic-bezier(.5,0,.2,1) .5s forwards}
+.ig.is-leaving .ig-book{animation:igShift 1.7s cubic-bezier(.5,0,.2,1) .5s forwards}
+
+/* ---------- keyframes ---------- */
+@keyframes igFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes igBreath{50%{transform:scale(1.06)}}
+@keyframes igRing{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.2);opacity:0}}
+@keyframes igSealOut{
+  0%{transform:scale(1);opacity:1}
+  25%{transform:scale(.9)}
+  55%{transform:scale(1.06);opacity:1}
+  100%{transform:scale(1.35);opacity:0}
+}
+@keyframes igGlow{0%{opacity:0;transform:scale(.3)}25%{opacity:1}100%{opacity:0;transform:scale(1.7)}}
+@keyframes igGone{to{opacity:0}}
+@keyframes igOpen{
+  from{transform:translateZ(2px) rotateY(0)}
+  to{transform:translateZ(2px) rotateY(-172deg)}
+}
+@keyframes igShift{to{transform:translateX(var(--shift))}}
+@keyframes igFold{
+  0%{transform:scaleX(1) skewY(0);opacity:1}
+  65%{opacity:1}
+  100%{transform:scaleX(.03) skewY(-6deg);opacity:0}
+}
+
+/* ---------- phones, touch screens, narrow windows: flat 2D fold ----------
+   No 3D at all, so nothing can flicker, tear or "split" on mobile GPUs.
+   The cover folds in toward its hinge and fades, revealing "Welcome in." underneath. */
+@media (max-width:820px),(pointer:coarse){
+  .ig-stage{perspective:none}
+  .ig-book,.ig-cover{transform-style:flat}
+  .ig-cover{transform:none}
+  .ig-page{transform:none}
+  .ig-back{display:none}
+  .ig-front{transform-origin:left center;backface-visibility:visible;-webkit-backface-visibility:visible}
+  .ig.is-leaving .ig-cover,.ig.is-leaving .ig-book{animation:none}
+  .ig.is-leaving .ig-front{animation:igFold 1.5s cubic-bezier(.55,0,.25,1) .5s forwards}
+}
+
+/* ---------- reduce motion: no animation, just a quick fade after the tap ---------- */
+@media(prefers-reduced-motion:reduce){
+  .ig *,.ig *::before,.ig *::after{animation:none!important}
+  .ig-dust{display:none}
+  .ig{transition:opacity .3s ease}
+  .ig.is-leaving{opacity:0}
+}
