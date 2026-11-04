@@ -10,6 +10,7 @@ import './styles/feelings.css';
 import './styles/softmotion.css';
 import './styles/tour.css';
 import './styles/closing.css';
+import './styles/datePicker.css';
 import './styles/Polish.css'; // must be last: intro gate + mobile fixes
 
 // This site doesn't use a service worker. In dev, remove any worker (and its caches)

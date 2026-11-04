@@ -77,6 +77,11 @@ const STEPS = [
     emit('tour:secret');
     await t.wait(5500);
   },
+  // 7. The date picker opens for her ("Where to next, love?")
+  async t => {
+    emit('tour:date-picker');
+    await t.wait(2500);
+  },
 ];
 
 export default function useAutoTour({ celebrate, isCelebrated }) {
@@ -102,7 +107,7 @@ export default function useAutoTour({ celebrate, isCelebrated }) {
 
   const runFrom = useCallback(async from => {
     cancelAll();
-    // close the photo gallery if it was left open by a pause or a skip
+    // close the photo gallery (and the date picker) if they were left open by a pause or a skip
     emit('tour:close-all');
     const token = runRef.current;
     setSt('playing');
