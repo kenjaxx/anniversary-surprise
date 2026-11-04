@@ -21,7 +21,9 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
-const GATE_FADE_WAIT_MS = 3200; // was 1800: the card-opening intro needs a little longer to play out
+// How long after her tap the envelope starts opening. The greeting card takes about 4.3s to open and fade,
+// so this waits until it is gone (set in src/data/tour.js as envelopeOpenDelayMs).
+const GATE_OPEN_WAIT_MS = tourCfg.envelopeOpenDelayMs ?? 5600;
 
 function App() {
   const [opened, setOpened] = useState(false);
@@ -33,7 +35,7 @@ function App() {
   const gateTimer = useRef(null);
 
   const progressRef = useScrollProgress();
-  const { musicOn, musicStatus, toggleMusic, startMusic } = useMusic();
+  const { startMusic } = useMusic(); // the song always plays: there is no on/off button any more
   useReveal([opened, celebrated]);
 
   // After a reload, always begin at the top (browsers otherwise restore the old scroll position).
@@ -73,6 +75,7 @@ function App() {
     setStarting(true);
     scrollToElement(stageRef.current, { block: 'center', duration: 1000 });
     clearTimeout(openTimer.current);
+    // when the envelope has finished opening, the tour moves on to the next section
     openTimer.current = setTimeout(() => {
       setStarting(false);
       if (tourCfg.enabled) tour.start();
@@ -94,7 +97,7 @@ function App() {
     // Keep the tour controls out of sight from this very first tap (no flash while the gate fades).
     setStarting(true);
     clearTimeout(gateTimer.current);
-    gateTimer.current = setTimeout(openEnvelope, GATE_FADE_WAIT_MS);
+    gateTimer.current = setTimeout(openEnvelope, GATE_OPEN_WAIT_MS);
   };
 
   // If the page is open when the clock hits the anniversary, celebrate automatically.
@@ -126,7 +129,7 @@ function App() {
       <div className="ambient ambient-one" data-parallax="0.1" />
       <div className="ambient ambient-two" data-parallax="0.16" />
 
-      <Topbar musicOn={musicOn} musicStatus={musicStatus} onToggleMusic={toggleMusic} />
+      <Topbar />
       <Hero opened={opened} onOpen={openEnvelope} stageRef={stageRef} />
       <OneYear onCelebrate={celebrate} />
       {celebrated && <Celebration />}

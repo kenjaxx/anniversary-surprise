@@ -100,8 +100,8 @@ export default function IntroGate({ onEnter }) {
           {/* the inside right page, revealed when the cover opens */}
           <div className="ig-face ig-page">
             <span className="ig-orn" aria-hidden="true">♥</span>
-            <h2 className="ig-tt">Welcome in.</h2>
-            <p className="ig-nt">Please don’t scroll.<br />Just sit back and watch.</p>
+            <h2 className="ig-tt">Hi my Love ♥</h2>
+            <p className="ig-nt">don’t scroll.<br />Just sit back and watch.</p>
           </div>
 
           <div className="ig-cover">
@@ -133,7 +133,7 @@ export default function IntroGate({ onEnter }) {
             {/* the inside left page (back of the cover) */}
             <div className="ig-face ig-back">
               <span className="ig-orn" aria-hidden="true">♥</span>
-              <p className="ig-nt">One year, kept<br />just for you.</p>
+              <p className="ig-nt">One year, kept<br />just for you ♥</p>
             </div>
           </div>
         </div>

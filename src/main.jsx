@@ -11,9 +11,10 @@ import './styles/softmotion.css';
 import './styles/tour.css';
 import './styles/closing.css';
 import './styles/datePicker.css';
-import './styles/Polish.css'; // must be last: intro gate + mobile fixes
-import './styles/Polish.css'; // mobile fixes
-import './styles/gate.css';   // the "Tap the seal to begin" intro (last)
+import './styles/Polish.css';  // mobile fixes
+import './styles/gate.css';    // the "Tap the seal to begin" intro
+import './styles/navbar.css';  // the love-letter strip navbar (must be last)
+
 // This site doesn't use a service worker. In dev, remove any worker (and its caches)
 // left over from another project that ran on the same localhost port.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {

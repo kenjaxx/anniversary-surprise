@@ -1,0 +1,97 @@
+/* navbar.css: the "love-letter strip" navbar. Import LAST in main.jsx (after gate.css).
+   Cream paper, a gold hairline frame, a wax-seal heart. Only transform / opacity / color are animated,
+   so it stays soft and smooth. The selectors use two classes (.topbar.letter-bar), so they win over the
+   older .topbar rules in styles.css, enhance.css and Polish.css without touching them. */
+
+.topbar.letter-bar{
+  height:64px;
+  padding:0 max(5vw,32px);
+  justify-content:space-between;
+  background:linear-gradient(180deg,#fff7ea,#fff0da);
+  border-bottom:1px solid #e9d8bc;
+  box-shadow:0 12px 28px -24px rgba(120,80,60,.55);
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+
+/* the thin gold frame drawn inside the strip, like the edge of a letter */
+.lb-frame{
+  position:absolute;left:10px;right:10px;top:7px;bottom:7px;
+  border:1px solid rgba(201,160,99,.42);border-radius:3px;
+  pointer-events:none;
+}
+
+/* ---------- brand: wax seal + name ---------- */
+.lb-brand{
+  position:relative;display:flex;align-items:center;gap:12px;
+  text-decoration:none;color:var(--ink);white-space:nowrap;
+}
+.lb-seal{
+  position:relative;width:30px;height:30px;border-radius:50%;
+  display:grid;place-items:center;flex-shrink:0;
+  font-size:13px;line-height:1;color:#ffe9dc;
+  background:radial-gradient(circle at 35% 30%,#ef8a9a,#c94f68 72%);
+  box-shadow:0 4px 9px -2px rgba(155,70,80,.4);
+  animation:lbBeat 4.2s ease-in-out infinite;
+}
+.lb-seal::after{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  border:1px solid rgba(255,233,220,.5);
+}
+.lb-name{font:italic 500 18px var(--serif);letter-spacing:.005em;color:var(--ink)}
+
+/* a very soft heartbeat, once every few seconds */
+@keyframes lbBeat{
+  0%,100%{transform:scale(1)}
+  8%{transform:scale(1.09)}
+  16%{transform:scale(1)}
+}
+
+/* ---------- links ---------- */
+.lb-links{position:relative;display:flex;align-items:center;gap:32px}
+.lb-link{
+  position:relative;border:0;background:none;padding:7px 2px;
+  font:italic 400 16.5px var(--serif);color:#7a5a52;
+  transition:color .7s ease;
+}
+.lb-link::after{
+  content:'';position:absolute;left:0;right:0;bottom:1px;height:1.5px;border-radius:2px;
+  background:linear-gradient(90deg,#c9a063,#e86e82);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 1s cubic-bezier(.22,.7,.25,1);
+}
+.lb-link:hover,
+.lb-link.is-active{color:var(--wine,#7a2e45)}
+.lb-link:hover::after,
+.lb-link.is-active::after{transform:scaleX(1)}
+
+/* ---------- phones: smaller, and the links stay visible ---------- */
+@media(max-width:560px){
+  .topbar.letter-bar{height:56px;padding:0 18px}
+  .lb-frame{left:6px;right:6px;top:5px;bottom:5px}
+  .lb-brand{gap:9px}
+  .lb-seal{width:26px;height:26px;font-size:11px}
+  .lb-name{font-size:15px}
+  .lb-links{gap:15px}
+  .lb-link{font-size:14.5px;padding:8px 1px}
+}
+/* very small phones: keep just the seal, so the three links still fit */
+@media(max-width:400px){
+  .lb-name{display:none}
+  .lb-links{gap:14px}
+}
+
+/* touch screens have no hover: only the section she is reading is underlined */
+@media(hover:none){
+  .lb-link:hover{color:#7a5a52}
+  .lb-link:hover::after{transform:scaleX(0)}
+  .lb-link.is-active,
+  .lb-link.is-active:hover{color:var(--wine,#7a2e45)}
+  .lb-link.is-active::after,
+  .lb-link.is-active:hover::after{transform:scaleX(1)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .lb-seal{animation:none}
+  .lb-link,.lb-link::after{transition-duration:.01ms}
+}
