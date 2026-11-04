@@ -108,3 +108,95 @@
   .feeling-rule{margin:9px auto}
   .feeling-back p{font-size:11px;line-height:1.55}
 }
+
+/* =========================================================
+   PETAL BLOOM: slow lift + glow + petals + words that rise in
+   Only transform / opacity are animated, so it stays smooth.
+   ========================================================= */
+
+/* each card gets a slot, so the glow and petals can sit around it */
+.feeling-slot{
+  position:relative;z-index:0;
+  display:flex;align-items:center;justify-content:center;
+  max-width:100%;min-width:0;
+  --spread:1; /* how far the petals travel (smaller on phones) */
+}
+.feeling-slot.is-flipped{z-index:3}
+
+/* the lift: a slow, soft rise while the card is turned over */
+.feeling-lift{
+  position:relative;z-index:1;display:flex;
+  transition:transform 1.2s cubic-bezier(.22,.7,.25,1);
+}
+.feeling-slot.is-flipped .feeling-lift{transform:translateY(-10px) scale(1.04)}
+
+/* the glow: takes its colour from the card (item.to in content.js) */
+.feeling-glow{
+  position:absolute;left:50%;top:50%;z-index:0;
+  width:128%;aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,color-mix(in srgb,var(--glow,#f4a3b8) 85%,transparent),transparent);
+  opacity:0;transform:translate(-50%,-50%) scale(.55);
+  transition:opacity 1s ease,transform 1.4s cubic-bezier(.22,.7,.25,1);
+}
+.feeling-slot.is-flipped .feeling-glow{opacity:.8;transform:translate(-50%,-50%) scale(1)}
+
+/* the petals: burst out as the card turns edge-on, then drift down and fade */
+.petal-burst{
+  position:absolute;left:50%;top:50%;width:0;height:0;
+  z-index:6;pointer-events:none;
+}
+.petal{
+  position:absolute;left:0;top:0;
+  width:var(--s);height:calc(var(--s) * 1.35);
+  background:var(--c);border-radius:50% 0 50% 0;
+  opacity:0;will-change:transform,opacity;
+  animation:petalBloom var(--dur) cubic-bezier(.2,.7,.3,1) var(--d) both;
+}
+@keyframes petalBloom{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(0deg)}
+  14%{opacity:1}
+  42%{
+    opacity:1;
+    transform:translate(calc(-50% + var(--x) * .75 * var(--spread)),calc(-50% + var(--y) * var(--spread))) scale(1) rotate(calc(var(--rot) * .5));
+  }
+  100%{
+    opacity:0;
+    transform:translate(calc(-50% + var(--x) * var(--spread)),calc(-50% + (var(--y) + var(--fall)) * var(--spread))) scale(.9) rotate(var(--rot));
+  }
+}
+
+/* the back of the card: header pieces, then every word, rise in one by one.
+   Turned over  -> slow, staggered (the delay grows with --w).
+   Turned back  -> a quick fade, no delay, so nothing lingers. */
+.feeling-back .fb-rise{
+  opacity:0;transform:translateY(8px);
+  transition:opacity .35s ease,transform .35s ease;
+}
+.fb-word{display:inline-block}
+.feeling-slot.is-flipped .feeling-back .fb-rise{
+  opacity:1;transform:none;
+  transition:
+    opacity .9s ease calc(.45s + var(--w) * 70ms),
+    transform 1s cubic-bezier(.22,.7,.25,1) calc(.45s + var(--w) * 70ms);
+}
+
+/* phones: smaller cards, so the petals travel less and there are fewer of them */
+@media(max-width:560px){
+  .feeling-slot{--spread:.6}
+  .petal:nth-child(n+7){display:none}
+  .feeling-slot.is-flipped .feeling-lift{transform:translateY(-6px) scale(1.03)}
+  .feeling-slot.is-flipped .feeling-back .fb-rise{
+    transition:
+      opacity .8s ease calc(.4s + var(--w) * 55ms),
+      transform .9s cubic-bezier(.22,.7,.25,1) calc(.4s + var(--w) * 55ms);
+  }
+}
+
+/* reduce motion: no petals, no lift, text simply there */
+@media(prefers-reduced-motion:reduce){
+  .petal-burst{display:none}
+  .feeling-lift,.feeling-glow{transition:none}
+  .feeling-slot.is-flipped .feeling-lift{transform:none}
+  .feeling-back .fb-rise,
+  .feeling-slot.is-flipped .feeling-back .fb-rise{opacity:1;transform:none;transition:none}
+}

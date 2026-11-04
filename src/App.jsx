@@ -230,7 +230,7 @@ function App() {
         sequential={single}
       />
       <OneYear onCelebrate={celebrate} />
-      {celebrated && <Celebration />}
+      <Celebration />
       <Story />
       <Thanks />
       <Letter />

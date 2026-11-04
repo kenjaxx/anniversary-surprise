@@ -10,7 +10,7 @@ export const tour = {
   // (Not affected by "pace". Scrolling to the next section still starts right after the envelope has opened.)
   envelopeOpenDelayMs: 5600,
 
-  flipGapMs: 2800,     // how long she gets to read each flip card
+   flipGapMs: 4200,     // how long she gets to read each flip card (was 2800: the bloom needs more time)
   wordMs: 180,         // reading time per word for the letter (higher = slower)
   photoBaseMs: 2800,   // minimum time each photo stays open (includes the transition)
   photoWordMs: 240,    // extra time per word of that photo's caption
