@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, Check, Copy, Send, X } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Heart, Send, X } from 'lucide-react';
 import CircularGallery from './CircularGallery.jsx';
 import { datePicker as cfg } from '../data/dates.js';
+import { fireConfetti } from '../utils/confetti.js';
 import '../styles/datePicker.css';
 
 // ---------- small helpers ----------
 
-// Floating glyphs for each theme's background. Generated once, from a tiny seeded generator,
-// so they never jump around between renders.
-const DECO = cfg.options.map((o, oi) => {
-  let seed = oi * 97 + 13;
-  const rnd = () => {
+// A tiny seeded generator, so the decorations never jump around between renders.
+const seeded = start => {
+  let seed = start;
+  return () => {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
+};
+
+// Floating glyphs for each theme's background.
+const DECO = cfg.options.map((o, oi) => {
+  const rnd = seeded(oi * 97 + 13);
   return Array.from({ length: 10 }, (_, i) => ({
     glyph: o.deco[i % o.deco.length],
     left: 3 + rnd() * 94,
@@ -23,6 +28,19 @@ const DECO = cfg.options.map((o, oi) => {
     delay: -rnd() * 16,
   }));
 });
+
+// The little burst of hearts that rises from the date card when she confirms.
+const BURST = (() => {
+  const rnd = seeded(7);
+  const glyphs = ['♡', '♥', '✦', '♡', '♥'];
+  return Array.from({ length: 16 }, (_, i) => ({
+    glyph: glyphs[i % glyphs.length],
+    size: 14 + Math.round(rnd() * 16),
+    dx: Math.round((rnd() - 0.5) * 340),
+    dy: -Math.round(80 + rnd() * 190),
+    delay: Math.round(rnd() * 700),
+  }));
+})();
 
 // A quiet gradient card, used when a photo file is missing.
 function gradientImage(from, to) {
@@ -138,6 +156,11 @@ function Picker({ onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
+  // A little celebration the moment she confirms.
+  useEffect(() => {
+    if (step === 'done') fireConfetti(1400);
+  }, [step]);
+
   const send = async () => {
     if (mobile) {
       window.location.href = smsHref(message);
@@ -149,6 +172,14 @@ function Picker({ onClose }) {
   };
 
   const copyAgain = async () => setCopied(await copyText(message));
+
+  const status = mobile
+    ? copied
+      ? `Copied ♡ Paste it into your chat with ${cfg.sender} if you need to.`
+      : 'Your messages app is open with everything written. Press send and it’s official. 💌'
+    : copied
+      ? `Copied ♡ Now paste it to ${cfg.sender} at ${cfg.display}.`
+      : `Couldn’t copy automatically. Select the message below and send it to ${cfg.display}.`;
 
   return (
     <div
@@ -230,7 +261,7 @@ function Picker({ onClose }) {
 
             <section className="dp-panel" aria-live="polite">
               <span className="dp-label">Your pick</span>
-              <h3 className="dp-pick" key={option.title}>{option.title}</h3>
+              <h3 className="dp-pick" key={option.title}>{option.title} {option.emoji}</h3>
               <p className="dp-pick-line" key={option.line}>{option.line}</p>
 
               <div className="dp-chips" role="group" aria-label="When">
@@ -248,24 +279,49 @@ function Picker({ onClose }) {
 
               <button className="dp-send" onClick={send}>
                 {mobile ? <Send size={17} /> : <Copy size={17} />}
-                {mobile ? 'Send to Kenji' : 'Copy message for Kenji'}
+                {mobile ? `Send to ${cfg.sender}` : `Copy message for ${cfg.sender}`}
               </button>
             </section>
           </>
         ) : (
           <section className="dp-done" aria-live="polite">
-            <span className="dp-done-icon" aria-hidden="true">
-              <Check size={22} strokeWidth={1.6} />
-            </span>
-            <h3>{option.title}, it is.</h3>
-            <p>
-              {mobile
-                ? 'Your messages app is open with everything written. Press send and it’s official.'
-                : copied
-                  ? `Your message is copied. Paste it to Kenji at ${cfg.display}.`
-                  : `Couldn’t copy automatically. Select the message below and send it to ${cfg.display}.`}
-            </p>
-            <blockquote className="dp-quote">{message}</blockquote>
+            {/* hearts that rise from the date card */}
+            <div className="dp-burst" aria-hidden="true">
+              {BURST.map((b, i) => (
+                <span
+                  key={i}
+                  style={{ '--s': `${b.size}px`, '--dx': `${b.dx}px`, '--dy': `${b.dy}px`, '--bd': `${b.delay}ms` }}
+                >
+                  {b.glyph}
+                </span>
+              ))}
+            </div>
+
+            <div className="dp-ticket">
+              <span className="dp-ticket-seal" aria-hidden="true">
+                <Heart size={15} fill="currentColor" />
+              </span>
+              <span className="dp-ticket-eyebrow">our next date</span>
+              <span className="dp-ticket-emoji" aria-hidden="true">{option.emoji}</span>
+              <h3>{option.title}</h3>
+              <span className="dp-ticket-when">
+                <Check size={14} strokeWidth={2} aria-hidden="true" /> {when.label}
+              </span>
+            </div>
+
+            <p className="dp-done-title">It’s a date, love ♡</p>
+            <p className="dp-done-lead">{option.doneLine}</p>
+            <p className="dp-done-status">{status}</p>
+
+            {/* On a computer there is no messages app: she has to paste, so she sees what she's sending.
+                On a phone the message is already written in her messages app, so it stays out of the way. */}
+            {!mobile && (
+              <div className="dp-bubble-wrap">
+                <span className="dp-bubble-label">Your message to {cfg.sender}</span>
+                <div className="dp-bubble">{message}</div>
+              </div>
+            )}
+
             <div className="dp-actions">
               {mobile ? (
                 <a className="dp-send" href={smsHref(message)}>
@@ -280,6 +336,12 @@ function Picker({ onClose }) {
                 <ArrowLeft size={16} /> Choose something else
               </button>
             </div>
+
+            {mobile && (
+              <button className="dp-link" onClick={copyAgain}>
+                {copied ? 'Copied ♡' : 'Messages didn’t open? Copy the message instead'}
+              </button>
+            )}
           </section>
         )}
       </div>
