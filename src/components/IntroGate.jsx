@@ -2,8 +2,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Volume2 } from 'lucide-react';
 import { content } from '../data/content.js';
 
-const LEAVE_MS = 4400;        // seal pop + cover opens + a short pause + fade (matches gate.css)
-const LEAVE_REDUCED_MS = 350; // for people who prefer reduced motion
+// How long the whole gate takes after her tap, until it is gone (matches gate.css):
+// seal pop + cover opens + a moment to read "Hi my Love" + the card lifts away with petals + the gate fades.
+// App.jsx imports this, so the text and the tree always start after the gate has really left.
+export const GATE_CLOSE_MS = 5500;
+export const GATE_REDUCED_MS = 350; // for people who prefer reduced motion
 
 // Soft gold specks, generated once from a tiny seeded generator.
 const DUST = (() => {
@@ -18,6 +21,30 @@ const DUST = (() => {
     dur: 9 + rnd() * 7,
     delay: -(rnd() * 14),
     drift: (rnd() - 0.5) * 70,
+  }));
+})();
+
+// The petals that rise from the card when it closes. Generated once, so they never jump between renders.
+// ox / oy = where they start, as a fraction of the card width, measured from the middle of the card.
+const PETALS = (() => {
+  let seed = 31;
+  const rnd = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  const glyphs = ['♥', '♡', '✿', '✦'];
+  const colors = ['#e0a1a8', '#f0b7c0', '#e9b872', '#d9788a'];
+  return Array.from({ length: 26 }, (_, i) => ({
+    glyph: glyphs[i % glyphs.length],
+    color: colors[(i * 3) % colors.length],
+    ox: (rnd() - 0.5) * 0.95,
+    oy: -0.3 + rnd() * 0.62,
+    size: 12 + Math.round(rnd() * 14),
+    dx: Math.round((rnd() - 0.5) * 150),
+    dy: -Math.round(120 + rnd() * 190),
+    rot: Math.round((rnd() - 0.5) * 220),
+    delay: Math.round(rnd() * 600) / 1000,
+    dur: Math.round((1.4 + rnd() * 0.3) * 100) / 100,
   }));
 })();
 
@@ -62,7 +89,7 @@ export default function IntroGate({ onEnter }) {
   useEffect(() => {
     if (!leaving) return undefined;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const id = setTimeout(() => setGone(true), reduce ? LEAVE_REDUCED_MS : LEAVE_MS);
+    const id = setTimeout(() => setGone(true), reduce ? GATE_REDUCED_MS : GATE_CLOSE_MS);
     return () => clearTimeout(id);
   }, [leaving]);
 
@@ -95,48 +122,74 @@ export default function IntroGate({ onEnter }) {
         ))}
       </div>
 
-      <div className="ig-stage">
-        <div className="ig-book">
-          {/* the inside right page, revealed when the cover opens */}
-          <div className="ig-face ig-page">
-            <span className="ig-orn" aria-hidden="true">♥</span>
-            <h2 className="ig-tt">Hi my Love ♥</h2>
-            <p className="ig-nt">don’t scroll.<br />Just sit back and watch.</p>
-          </div>
-
-          <div className="ig-cover">
-            {/* the front of the card */}
-            <div className="ig-face ig-front" onClick={enter}>
-              <Sprig className="s1" />
-              <Sprig className="s2" />
-              <div className="ig-lbl">
-                <span className="ig-eb">for {content.partnerNickname}</span>
-                <h1 className="ig-tt">I made you<br />something.</h1>
-
-                <div className="ig-sealwrap">
-                  <i className="ig-burst" aria-hidden="true" />
-                  <button
-                    type="button"
-                    className="ig-seal"
-                    onClick={e => { e.stopPropagation(); enter(); }}
-                    autoFocus
-                    aria-label="Tap to open"
-                  >
-                    ♥
-                  </button>
-                </div>
-
-                <span className="ig-cta">Tap to open</span>
-              </div>
+      {/* the card lifts away as one piece when the gate closes */}
+      <div className="ig-lift">
+        <div className="ig-stage">
+          <div className="ig-book">
+            {/* the inside right page, revealed when the cover opens */}
+            <div className="ig-face ig-page">
+              <span className="ig-orn" aria-hidden="true">♥</span>
+              <h2 className="ig-tt">Hi my Love ♥</h2>
+              <p className="ig-nt">don’t scroll.<br />Just sit back and watch.</p>
             </div>
 
-            {/* the inside left page (back of the cover) */}
-            <div className="ig-face ig-back">
-              <span className="ig-orn" aria-hidden="true">♥</span>
-              <p className="ig-nt">One year, kept<br />just for you ♥</p>
+            <div className="ig-cover">
+              {/* the front of the card */}
+              <div className="ig-face ig-front" onClick={enter}>
+                <Sprig className="s1" />
+                <Sprig className="s2" />
+                <div className="ig-lbl">
+                  <span className="ig-eb">for {content.partnerNickname}</span>
+                  <h1 className="ig-tt">I made you<br />something.</h1>
+
+                  <div className="ig-sealwrap">
+                    <i className="ig-burst" aria-hidden="true" />
+                    <button
+                      type="button"
+                      className="ig-seal"
+                      onClick={e => { e.stopPropagation(); enter(); }}
+                      autoFocus
+                      aria-label="Tap to open"
+                    >
+                      ♥
+                    </button>
+                  </div>
+
+                  <span className="ig-cta">Tap to open</span>
+                </div>
+              </div>
+
+              {/* the inside left page (back of the cover) */}
+              <div className="ig-face ig-back">
+                <span className="ig-orn" aria-hidden="true">♥</span>
+                <p className="ig-nt">One year, kept<br />just for you ♥</p>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* petals that rise from the card while it closes */}
+      <div className="ig-petals" aria-hidden="true">
+        {PETALS.map((p, i) => (
+          <span
+            key={i}
+            className="ig-petal"
+            style={{
+              '--ox': p.ox,
+              '--oy': p.oy,
+              '--s': `${p.size}px`,
+              '--dx': `${p.dx}px`,
+              '--dy': `${p.dy}px`,
+              '--rot': `${p.rot}deg`,
+              '--d': `${p.delay}s`,
+              '--dur': `${p.dur}s`,
+              '--c': p.color,
+            }}
+          >
+            {p.glyph}
+          </span>
+        ))}
       </div>
 
       <p className="ig-sound">

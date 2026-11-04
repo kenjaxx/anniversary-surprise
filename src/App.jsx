@@ -10,7 +10,7 @@ import useMusic from './hooks/useMusic.js';
 import useAutoTour from './hooks/useAutoTour.js';
 import useSingleDisplay from './hooks/useSingleDisplay.js';
 
-import IntroGate from './components/IntroGate.jsx';
+import IntroGate, { GATE_CLOSE_MS, GATE_REDUCED_MS } from './components/IntroGate.jsx';
 import Petals from './components/Petals.jsx';
 import Topbar from './components/Topbar.jsx';
 import Hero from './components/Hero.jsx';
@@ -22,13 +22,9 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
-// PHONE / SINGLE DISPLAY: the greeting card is gone after about 4.4s. The hero text starts "writing" right after that.
-const INTRO_DONE_MS = 4300;
-
-// WEB: the text and the tree start together as soon as the greeting card begins to fade
-// (the card is a full-screen overlay, so anything earlier would play behind it).
-// Set this to 0 to start at the very instant of the tap.
-const WEB_INTRO_MS = 3400;
+// The pause between the intro card being completely gone and the hero text + tree beginning.
+// The gate itself takes GATE_CLOSE_MS (set in IntroGate.jsx, and matched in gate.css).
+const START_DELAY_MS = 1000;
 
 // PHONE / SINGLE DISPLAY ONLY: pause after the last line is written, before the tree starts growing.
 const TREE_AFTER_TYPING_MS = 1400;
@@ -165,13 +161,16 @@ function App() {
 
     const isSingle = singleRef.current;
 
-    // Phone: the text waits for the gate to be completely gone.
-    // Web: the text starts as the gate begins to fade.
+    // The gate takes GATE_CLOSE_MS to close (a quick fade if she prefers reduced motion).
+    // The text and the tree then wait START_DELAY_MS more, on the empty cream page, before they begin.
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const startIn = (reduce ? GATE_REDUCED_MS : GATE_CLOSE_MS) + START_DELAY_MS;
+
     clearTimeout(introTimer.current);
-    introTimer.current = setTimeout(() => setIntroDone(true), isSingle ? INTRO_DONE_MS : WEB_INTRO_MS);
+    introTimer.current = setTimeout(() => setIntroDone(true), startIn);
 
     if (!tourCfg.enabled) return;
-    // Keep the tour controls out of sight from this very first tap (no flash while the gate fades).
+    // Keep the tour controls out of sight from this very first tap (no flash while the gate closes).
     setStarting(true);
     autoRef.current = true;
 
@@ -182,10 +181,10 @@ function App() {
         if (autoRef.current) openRef.current?.();
       }, TYPING_FALLBACK_MS);
     } else {
-      // Web: the tree grows together with the text, no waiting for the text to finish.
+      // Web: the tree starts growing at the same moment the text starts being written.
       gateTimer.current = setTimeout(() => {
         if (autoRef.current) openRef.current?.();
-      }, WEB_INTRO_MS);
+      }, startIn);
     }
   };
 

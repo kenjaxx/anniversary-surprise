@@ -16,6 +16,9 @@ import './styles/Polish.css';
 import './styles/gate.css';
 import './styles/navbar.css';
 
+// The hanging cloth in the "Happy 1 Year!" section
+import './styles/cloth.css';
+
 // First-section tree + typed text (keep last)
 import './styles/hero-tree.css';
 
