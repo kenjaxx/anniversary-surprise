@@ -105,16 +105,14 @@ const STEPS = [
   },
 
   // 5. Love letter
+  // 5. Love letter (scroll-driven tri-fold: the tour's scroll opens it, reads it, and folds it shut)
   async t => {
     await t.goTo('#letter');
-    await t.wait(2000);
-
-    emit('tour:open-letter');
-    await t.wait(1000);
+    await t.wait(1800);
 
     await t.readThrough(
-      document.querySelector('.letter-paper'),
-      letterWords() * cfg.wordMs + 1500
+      document.querySelector('.tf-track'),
+      letterWords() * cfg.wordMs * 0.9 + 6000
     );
   },
 
