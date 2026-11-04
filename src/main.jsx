@@ -5,6 +5,7 @@ import App from './App.jsx';
 
 import './styles/styles.css';
 import './styles/enhance.css';
+import './styles/envelope-fix.css';
 import './styles/counter.css';
 import './styles/wall.css';
 import './styles/memories.css';
@@ -17,20 +18,20 @@ import './styles/Polish.css';
 import './styles/gate.css';
 import './styles/navbar.css';
 
-// New generative tree styling
+// Generative tree styling
 import './styles/generative-tree.css';
 
 // This site doesn't use a service worker.
 // In dev, remove any worker and caches left over from another project.
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs =>
-    regs.forEach(r => r.unregister())
-  );
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    regs.forEach((registration) => registration.unregister());
+  });
 
   if ('caches' in window) {
-    caches.keys().then(keys =>
-      keys.forEach(k => caches.delete(k))
-    );
+    caches.keys().then((keys) => {
+      keys.forEach((key) => caches.delete(key));
+    });
   }
 }
 
