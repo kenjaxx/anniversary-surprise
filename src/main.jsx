@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
@@ -18,8 +17,8 @@ import './styles/Polish.css';
 import './styles/gate.css';
 import './styles/navbar.css';
 
-// Generative tree styling
-import './styles/generative-tree.css';
+// First-section tree + typed text (keep last)
+import './styles/hero-tree.css';
 
 // This site doesn't use a service worker.
 // In dev, remove any worker and caches left over from another project.

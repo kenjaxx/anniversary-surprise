@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Images, ArrowRight } from 'lucide-react';
 import { content, photoFallbacks } from '../data/content.js';
@@ -6,7 +5,6 @@ import SectionHeading from './SectionHeading.jsx';
 import DriftWall from './DriftWall.jsx';
 import MemoryModal from './MemoryModal.jsx';
 import AllMemories from './AllMemories.jsx';
-import GenerativeTreeSection from './GenerativeTreeSection.jsx';
 
 const items = content.moments.map((m, i) => ({
   index: i,
@@ -144,9 +142,6 @@ export default function Story() {
           Every little moment belongs in our story. <span>♡</span>
         </p>
       </section>
-
-      {/* New cinematic tree section */}
-      <GenerativeTreeSection />
 
       {/* Existing photo gallery modals */}
       {showAll && (

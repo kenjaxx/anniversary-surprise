@@ -1,0 +1,87 @@
+/* hero-tree.css: the growing tree in the first section + the "writing" text.
+   Import LAST in main.jsx. */
+
+/* ---------- the tree stage (replaces the envelope) ---------- */
+.tree-stage{
+  position:relative;height:470px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;isolation:isolate;
+  -webkit-tap-highlight-color:transparent;
+}
+.tree-stage.reveal{filter:none}
+.tree-halo{
+  position:absolute;inset:3% 0 9%;border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(255,214,200,.55),rgba(255,236,214,.26) 55%,transparent 76%);
+}
+.tree-canvas-wrap{position:absolute;inset:0 0 34px 0}
+.tree-canvas{display:block;width:100%;height:100%}
+
+.tree-hint{
+  position:absolute;left:0;right:0;bottom:4px;text-align:center;
+  font:italic 15px var(--serif);letter-spacing:.04em;color:#a5857d;
+  pointer-events:none;
+}
+.tree-stage:not(.is-open) .tree-hint{animation:treeHint 2.4s ease-in-out infinite}
+@keyframes treeHint{0%,100%{opacity:.55}50%{opacity:1}}
+.tree-stage.is-open .tree-hint{color:var(--rose-dark)}
+
+/* ---------- the left text, being "written" ---------- */
+.typed{position:relative;display:block}
+.typed-ghost{display:block;visibility:hidden}
+.typed-live{position:absolute;left:0;top:0;right:0;display:block}
+.typed-live.is-typing::after{
+  content:'';display:inline-block;width:2px;height:.85em;margin-left:3px;vertical-align:-.08em;
+  background:var(--rose);animation:typedCaret .8s steps(1) infinite;
+}
+@keyframes typedCaret{50%{opacity:0}}
+
+/* the title: gradient ink on the live text (the invisible copy stays invisible) */
+.hero .hero-title{
+  background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--ink);
+}
+.hero-title .typed-live{
+  background:linear-gradient(135deg,#48252b 30%,#a8404f 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero-title .typed-live.is-typing::after{-webkit-text-fill-color:initial}
+
+/* a hand-drawn underline that is "inked" after the title is written */
+.hero-flourish{display:block;width:180px;height:14px;margin:-6px 0 18px}
+.hero-flourish path{
+  fill:none;stroke:#e9b872;stroke-width:2.2;stroke-linecap:round;
+  stroke-dasharray:1;stroke-dashoffset:1;
+}
+.hero-flourish.on path{stroke-dashoffset:0;transition:stroke-dashoffset 1.3s cubic-bezier(.4,.1,.2,1)}
+
+.hero-lead .typed-live.is-typing::after{background:#c9a063}
+
+/* button appears once the paragraph is written */
+.hero-cta{opacity:0;transition:opacity .9s ease,transform .25s,background .25s,box-shadow .25s}
+.hero-cta.is-in,.hero-cta:disabled{opacity:1}
+
+/* the handwritten note and its heart */
+.hero-note .typed{display:inline-block}
+.hero-note .typed-ghost{display:inline-block}
+.hero-note .typed-live{right:auto;white-space:nowrap}
+.note-heart{
+  display:inline-block;color:var(--rose);font-size:27px;opacity:0;transform:scale(.4);
+  transition:opacity .5s,transform .6s cubic-bezier(.3,1.6,.5,1);
+}
+.note-heart.on{opacity:1;transform:scale(1)}
+
+@media(max-width:560px){
+  .tree-stage{height:370px;margin-top:8px}
+  .tree-canvas-wrap{inset:0 0 30px 0}
+  .tree-hint{font-size:13.5px}
+  .hero-flourish{margin:-4px auto 16px}
+  .hero-note .typed{display:inline-block}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .typed-live.is-typing::after,.tree-stage:not(.is-open) .tree-hint{animation:none}
+  .hero-flourish path{stroke-dashoffset:0;transition:none}
+  .hero-cta,.note-heart{transition:none}
+}
+/* the hint only appears once the text has been written */
+.tree-stage:not(.is-ready):not(.is-open) .tree-hint{opacity:0;animation:none}
+.tree-stage.is-ready:not(.is-open) .tree-hint{animation:treeHint 2.4s ease-in-out infinite}

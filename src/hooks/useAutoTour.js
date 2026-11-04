@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { scrollToY, stopScroll } from '../utils/scroll.js';
 import { content } from '../data/content.js';
@@ -16,6 +15,7 @@ const letterWords = () =>
   wordCount(`${content.letter.join(' ')} My dearest Forever yours`);
 
 // The tour, one step per section.
+// (The growing tree now lives in the hero, and is started by Hero/App before the tour begins.)
 const STEPS = [
   // 1. Time together counter
   async t => {
@@ -38,7 +38,7 @@ const STEPS = [
     await t.wait(4500);
   },
 
-  // 3. Photo memories + growing together tree
+  // 3. Photo memories
   async t => {
     await t.goTo('#story .section-heading');
     await t.wait(1800);
@@ -74,10 +74,6 @@ const STEPS = [
 
     emit('tour:close-all');
     await t.wait(900);
-
-    // NEW: Visit the golden generative tree
-    await t.goTo('#growing-together');
-    await t.wait(6500);
   },
 
   // 4. Feeling cards

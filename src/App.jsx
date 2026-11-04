@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { content, ENVELOPE_ANIMATION_MS } from './data/content.js';
 import { music } from './data/music.js';
 import { tour as tourCfg } from './data/tour.js';
@@ -21,18 +21,27 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
-// How long after her tap the envelope starts opening. The greeting card takes about 4.3s to open and fade,
-// so this waits until it is gone (set in src/data/tour.js as envelopeOpenDelayMs).
-const GATE_OPEN_WAIT_MS = tourCfg.envelopeOpenDelayMs ?? 5600;
+// The greeting card is gone after about 4.4s. The hero text starts "writing" right after that.
+const INTRO_DONE_MS = 4300;
+
+// Pause after the last line is written, before the tree starts growing (so she can read it).
+const TREE_AFTER_TYPING_MS = 1400;
+
+// Safety net: if for some reason the text never reports "done", grow the tree anyway.
+const TYPING_FALLBACK_MS = 30000;
 
 function App() {
   const [opened, setOpened] = useState(false);
-  const [starting, setStarting] = useState(false); // gate tapped / envelope tapped, tour about to begin
+  const [starting, setStarting] = useState(false); // gate tapped / tree tapped, tour about to begin
   const [celebrated, setCelebrated] = useState(false);
+  const [introDone, setIntroDone] = useState(!music.gate); // hero text waits for the gate to leave
   const celebratedRef = useRef(false);
   const stageRef = useRef(null);
   const openTimer = useRef(null);
   const gateTimer = useRef(null);
+  const introTimer = useRef(null);
+  const autoRef = useRef(false);   // true = the tree should grow by itself once the text is written
+  const openRef = useRef(null);    // always the latest openEnvelope
 
   const progressRef = useScrollProgress();
   const { startMusic } = useMusic(); // the song always plays: there is no on/off button any more
@@ -67,37 +76,59 @@ function App() {
   useEffect(() => () => {
     clearTimeout(openTimer.current);
     clearTimeout(gateTimer.current);
+    clearTimeout(introTimer.current);
   }, []);
 
+  // "Opening" means: the tree starts growing, then the tour moves on.
   const openEnvelope = () => {
     if (opened) return;
+    autoRef.current = false;
+    clearTimeout(gateTimer.current);
     setOpened(true);
     setStarting(true);
     scrollToElement(stageRef.current, { block: 'center', duration: 1000 });
     clearTimeout(openTimer.current);
-    // when the envelope has finished opening, the tour moves on to the next section
+    // when the tree has finished growing, the tour moves on to the next section
     openTimer.current = setTimeout(() => {
       setStarting(false);
       if (tourCfg.enabled) tour.start();
       else scrollTo('together');
     }, ENVELOPE_ANIMATION_MS);
   };
+  openRef.current = openEnvelope;
 
-  // The "Play auto tour" button: opens the envelope first if she has not yet.
+  // The "Play auto tour" button: grows the tree first if she has not yet.
   const startTour = () => {
     if (!opened) openEnvelope();
     else tour.restart();
   };
 
-  // Her tap on "Tap to begin": the music starts right inside the tap (browsers require that),
-  // then, once the gate has faded, the envelope opens and the tour plays by itself.
+  // Called by Hero once ALL the text has been written.
+  // If she came in through the gate, the tree now grows by itself (after a short pause).
+  const handleTyped = useCallback(() => {
+    if (!autoRef.current) return;
+    clearTimeout(gateTimer.current);
+    gateTimer.current = setTimeout(() => openRef.current?.(), TREE_AFTER_TYPING_MS);
+  }, []);
+
+  // Her tap on "Tap to begin": the music starts right inside the tap (browsers require that).
+  // The hero text starts writing once the gate has faded. The tree waits until the text is finished.
   const beginFromGate = () => {
     startMusic();
+
+    clearTimeout(introTimer.current);
+    introTimer.current = setTimeout(() => setIntroDone(true), INTRO_DONE_MS);
+
     if (!tourCfg.enabled) return;
     // Keep the tour controls out of sight from this very first tap (no flash while the gate fades).
     setStarting(true);
+    autoRef.current = true;
+
+    // safety net only: normally handleTyped starts the tree long before this
     clearTimeout(gateTimer.current);
-    gateTimer.current = setTimeout(openEnvelope, GATE_OPEN_WAIT_MS);
+    gateTimer.current = setTimeout(() => {
+      if (autoRef.current) openRef.current?.();
+    }, TYPING_FALLBACK_MS);
   };
 
   // If the page is open when the clock hits the anniversary, celebrate automatically.
@@ -111,6 +142,7 @@ function App() {
   const replay = () => {
     clearTimeout(openTimer.current);
     clearTimeout(gateTimer.current);
+    autoRef.current = false;
     tour.reset();
     window.dispatchEvent(new CustomEvent('tour:reset'));
     celebratedRef.current = false;
@@ -130,7 +162,13 @@ function App() {
       <div className="ambient ambient-two" data-parallax="0.16" />
 
       <Topbar />
-      <Hero opened={opened} onOpen={openEnvelope} stageRef={stageRef} />
+      <Hero
+        opened={opened}
+        onOpen={openEnvelope}
+        stageRef={stageRef}
+        ready={introDone}
+        onTyped={handleTyped}
+      />
       <OneYear onCelebrate={celebrate} />
       {celebrated && <Celebration />}
       <Story />

@@ -1,12 +1,34 @@
-
-import { ArrowRight, Heart } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { content } from '../data/content.js';
+import Typed from './Typed.jsx';
+import GenerativeTree from './GenerativeTree.jsx';
 
-export default function Hero({ opened, onOpen, stageRef }) {
-  const handleKeyDown = (event) => {
+// stage 0: title is being written
+// stage 1: paragraph is being written
+// stage 2: handwritten note is being written
+// stage 3: everything written -> onTyped() tells App the tree can grow
+export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }) {
+  const [stage, setStage] = useState(0);
+  const advance = n => () => setStage(s => Math.max(s, n));
+  const typedDone = stage >= 3;
+
+  // Tell the app once, when the last line has been written.
+  useEffect(() => {
+    if (typedDone) onTyped?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typedDone]);
+
+  // Tapping the tree before the text is written does nothing (the text always goes first).
+  const openTree = () => {
+    if (!typedDone && !opened) return;
+    onOpen();
+  };
+
+  const handleKeyDown = event => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      onOpen();
+      openTree();
     }
   };
 
@@ -18,59 +40,74 @@ export default function Hero({ opened, onOpen, stageRef }) {
           1 year, and counting
         </span>
 
-        <h1>{content.openingLine}</h1>
+        <h1 className="hero-title">
+          <Typed
+            text={content.openingLine}
+            run={ready}
+            delay={500}
+            speed={75}
+            onDone={advance(1)}
+          />
+        </h1>
 
-        <p>
-          I made you a tiny corner of the internet to say thank you
-          for this whole year.
+        <svg
+          className={`hero-flourish${stage >= 1 ? ' on' : ''}`}
+          viewBox="0 0 220 14"
+          aria-hidden="true"
+        >
+          <path d="M2 9 C 40 2, 70 14, 110 7 S 180 3, 218 9" pathLength="1" />
+        </svg>
+
+        <p className="hero-lead">
+          <Typed
+            text="I made you a tiny corner of the internet to say thank you for this whole year."
+            run={ready && stage >= 1}
+            delay={300}
+            speed={28}
+            onDone={advance(2)}
+          />
         </p>
 
         <button
-          className="primary-button"
+          className={`primary-button hero-cta${stage >= 2 || opened ? ' is-in' : ''}`}
           onClick={onOpen}
           disabled={opened}
         >
-          {opened ? 'Opening your surprise…' : 'Open your little surprise'}
+          {opened ? 'Growing our little tree…' : 'Open your little surprise'}
           <ArrowRight size={16} />
         </button>
 
         <div className="handwritten hero-note">
-          made with love, just for you <span>♡</span>
+          <Typed
+            text="made with love, just for you"
+            run={ready && stage >= 2}
+            delay={400}
+            speed={50}
+            onDone={advance(3)}
+          />{' '}
+          <span className={`note-heart${stage >= 3 ? ' on' : ''}`}>♡</span>
         </div>
       </div>
 
       <div
         ref={stageRef}
-        className={`envelope-stage reveal ${opened ? 'is-open' : ''}`}
-        onClick={onOpen}
+        className={`tree-stage reveal${opened ? ' is-open' : ''}${typedDone ? ' is-ready' : ''}`}
+        onClick={openTree}
         role="button"
         tabIndex={0}
-        aria-label="Open the love letter"
+        aria-label="Tap to make our tree grow"
         onKeyDown={handleKeyDown}
       >
+        <div className="tree-halo" aria-hidden="true" />
         <div className="sparkle s1" aria-hidden="true">✦</div>
         <div className="sparkle s2" aria-hidden="true">♡</div>
 
-        <div className="envelope">
-          <div className="envelope-back" />
-
-          <div className="letter-peek">
-            <span>Happy 1 year</span>
-            <Heart fill="currentColor" size={18} />
-          </div>
-
-          <div className="envelope-flap" />
-          <div className="envelope-front" />
-
-          <div className="wax-seal">
-            <Heart fill="currentColor" size={22} />
-          </div>
+        <div className="tree-canvas-wrap">
+          <GenerativeTree grow={opened} />
         </div>
 
-        <span className="envelope-hint">
-          {opened
-            ? 'Your little surprise awaits ↓'
-            : 'tap the envelope to open'}
+        <span className="tree-hint">
+          {opened ? 'growing, just like us ♡' : 'tap to watch it grow'}
         </span>
       </div>
 

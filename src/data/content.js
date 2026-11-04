@@ -216,5 +216,5 @@ export const gallery = [
   { src: '/photos/gallery-6.jpg', fallback: photoFallbacks[3], caption: 'And a thousand more' },
 ];
 
-// How long the envelope animation needs before we scroll to the next section.
-export const ENVELOPE_ANIMATION_MS = 2800;
+// How long the tree needs to grow before we scroll to the next section.
+export const ENVELOPE_ANIMATION_MS = 6200;
