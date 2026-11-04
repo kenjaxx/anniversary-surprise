@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { content } from '../data/content.js';
 import Typed from './Typed.jsx';
 import GenerativeTree from './GenerativeTree.jsx';
@@ -7,8 +6,11 @@ import GenerativeTree from './GenerativeTree.jsx';
 // stage 0: title is being written
 // stage 1: paragraph is being written
 // stage 2: handwritten note is being written
-// stage 3: everything written -> onTyped() tells App the tree can grow
-export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }) {
+// stage 3: everything written -> onTyped() tells App the text is done
+//
+// `sequential` = phone / single display: the text goes first, the tree waits for it.
+// On web (sequential = false) there are no waits: the text and the tree start together.
+export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped, sequential = false }) {
   const [stage, setStage] = useState(0);
   const advance = n => () => setStage(s => Math.max(s, n));
   const typedDone = stage >= 3;
@@ -19,9 +21,10 @@ export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typedDone]);
 
-  // Tapping the tree before the text is written does nothing (the text always goes first).
+  // Phone: tapping the tree before the text is written does nothing (the text always goes first).
+  // Web: the tree can be started at any time.
   const openTree = () => {
-    if (!typedDone && !opened) return;
+    if (sequential && !typedDone && !opened) return;
     onOpen();
   };
 
@@ -31,6 +34,9 @@ export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }
       openTree();
     }
   };
+
+  // small breathing pauses only on phones
+  const d = ms => (sequential ? ms : 0);
 
   return (
     <section className="hero section-wrap" id="top">
@@ -44,7 +50,7 @@ export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }
           <Typed
             text={content.openingLine}
             run={ready}
-            delay={500}
+            delay={d(500)}
             speed={75}
             onDone={advance(1)}
           />
@@ -62,26 +68,17 @@ export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }
           <Typed
             text="I made you a tiny corner of the internet to say thank you for this whole year."
             run={ready && stage >= 1}
-            delay={300}
+            delay={d(300)}
             speed={28}
             onDone={advance(2)}
           />
         </p>
 
-        <button
-          className={`primary-button hero-cta${stage >= 2 || opened ? ' is-in' : ''}`}
-          onClick={onOpen}
-          disabled={opened}
-        >
-          {opened ? 'Growing our little tree…' : 'Open your little surprise'}
-          <ArrowRight size={16} />
-        </button>
-
         <div className="handwritten hero-note">
           <Typed
             text="made with love, just for you"
             run={ready && stage >= 2}
-            delay={400}
+            delay={d(400)}
             speed={50}
             onDone={advance(3)}
           />{' '}
@@ -91,7 +88,7 @@ export default function Hero({ opened, onOpen, stageRef, ready = true, onTyped }
 
       <div
         ref={stageRef}
-        className={`tree-stage reveal${opened ? ' is-open' : ''}${typedDone ? ' is-ready' : ''}`}
+        className={`tree-stage reveal${opened ? ' is-open' : ''}${typedDone || !sequential ? ' is-ready' : ''}`}
         onClick={openTree}
         role="button"
         tabIndex={0}

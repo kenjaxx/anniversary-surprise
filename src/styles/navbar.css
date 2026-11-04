@@ -65,6 +65,18 @@
 .lb-link:hover::after,
 .lb-link.is-active::after{transform:scaleX(1)}
 
+/* ---------- "Plan our next date": a small gold-framed pill ---------- */
+.lb-date{
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+  padding:7px 15px;border:1px solid rgba(201,160,99,.65);border-radius:99px;
+  background:rgba(255,255,255,.55);
+  font:italic 400 16.5px var(--serif);color:var(--wine,#7a2e45);
+  transition:background-color .4s ease,border-color .4s ease,transform .3s ease;
+}
+.lb-date:hover{background:#fff;border-color:#c9a063;transform:translateY(-1px)}
+.lb-date-heart{color:var(--rose);font-style:normal;font-size:15px;line-height:1}
+.lb-date-short{display:none}
+
 /* ---------- phones: smaller, and the links stay visible ---------- */
 @media(max-width:560px){
   .topbar.letter-bar{height:56px;padding:0 18px}
@@ -72,13 +84,20 @@
   .lb-brand{gap:9px}
   .lb-seal{width:26px;height:26px;font-size:11px}
   .lb-name{font-size:15px}
-  .lb-links{gap:15px}
+  .lb-links{gap:13px}
   .lb-link{font-size:14.5px;padding:8px 1px}
+  .lb-date{padding:6px 11px;font-size:14px;gap:5px}
+  .lb-date-heart{font-size:13px}
+  .lb-date-full{display:none}
+  .lb-date-short{display:inline}
 }
-/* very small phones: keep just the seal, so the three links still fit */
+/* very small phones: keep just the seal, so the four links still fit */
 @media(max-width:400px){
   .lb-name{display:none}
-  .lb-links{gap:14px}
+  .lb-links{gap:10px}
+  .lb-link{font-size:13.5px}
+  .lb-date{padding:6px 9px;font-size:13px}
+  .lb-date-heart{display:none}
 }
 
 /* touch screens have no hover: only the section she is reading is underlined */
@@ -89,9 +108,10 @@
   .lb-link.is-active:hover{color:var(--wine,#7a2e45)}
   .lb-link.is-active::after,
   .lb-link.is-active:hover::after{transform:scaleX(1)}
+  .lb-date:hover{background:rgba(255,255,255,.55);border-color:rgba(201,160,99,.65);transform:none}
 }
 
 @media(prefers-reduced-motion:reduce){
   .lb-seal{animation:none}
-  .lb-link,.lb-link::after{transition-duration:.01ms}
+  .lb-link,.lb-link::after,.lb-date{transition-duration:.01ms}
 }

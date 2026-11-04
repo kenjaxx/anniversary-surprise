@@ -9,6 +9,9 @@ const LINKS = [
   { id: 'letter', label: 'A letter' },
 ];
 
+// Opens the "Where to next, love?" date picker (Closing.jsx listens for this event).
+const openDatePicker = () => window.dispatchEvent(new CustomEvent('tour:date-picker'));
+
 export default function Topbar() {
   const [active, setActive] = useState('');
 
@@ -55,6 +58,12 @@ export default function Topbar() {
             {label}
           </button>
         ))}
+
+        <button type="button" className="lb-date" onClick={openDatePicker} aria-label="Plan our next date">
+          <span className="lb-date-heart" aria-hidden="true">♡</span>
+          <span className="lb-date-full">Plan our next date</span>
+          <span className="lb-date-short">Next date</span>
+        </button>
       </div>
     </nav>
   );

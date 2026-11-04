@@ -8,6 +8,7 @@ import useReveal from './hooks/useReveal.js';
 import useScrollProgress from './hooks/useScrollProgress.js';
 import useMusic from './hooks/useMusic.js';
 import useAutoTour from './hooks/useAutoTour.js';
+import useSingleDisplay from './hooks/useSingleDisplay.js';
 
 import IntroGate from './components/IntroGate.jsx';
 import Petals from './components/Petals.jsx';
@@ -21,14 +22,23 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
-// The greeting card is gone after about 4.4s. The hero text starts "writing" right after that.
+// PHONE / SINGLE DISPLAY: the greeting card is gone after about 4.4s. The hero text starts "writing" right after that.
 const INTRO_DONE_MS = 4300;
 
-// Pause after the last line is written, before the tree starts growing (so she can read it).
+// WEB: the text and the tree start together as soon as the greeting card begins to fade
+// (the card is a full-screen overlay, so anything earlier would play behind it).
+// Set this to 0 to start at the very instant of the tap.
+const WEB_INTRO_MS = 3400;
+
+// PHONE / SINGLE DISPLAY ONLY: pause after the last line is written, before the tree starts growing.
 const TREE_AFTER_TYPING_MS = 1400;
 
-// Safety net: if for some reason the text never reports "done", grow the tree anyway.
+// PHONE / SINGLE DISPLAY ONLY: safety net if the text never reports "done", grow the tree anyway.
 const TYPING_FALLBACK_MS = 30000;
+
+// Extra time she gets to look at the finished text and tree, AFTER both are done,
+// before the page scrolls down to the next section. 1000 to 2000 is comfortable.
+const TOUR_PAD_MS = 1500;
 
 function App() {
   const [opened, setOpened] = useState(false);
@@ -40,8 +50,16 @@ function App() {
   const openTimer = useRef(null);
   const gateTimer = useRef(null);
   const introTimer = useRef(null);
-  const autoRef = useRef(false);   // true = the tree should grow by itself once the text is written
+  const padTimer = useRef(null);   // the extra pause before the tour scrolls on
+  const autoRef = useRef(false);   // true = the tree should grow by itself (she came in through the gate)
   const openRef = useRef(null);    // always the latest openEnvelope
+  const startRef = useRef(null);   // always the latest maybeStartTour
+  const typedRef = useRef(false);  // the hero text has been fully written
+  const treeDoneRef = useRef(false); // the tree has finished growing
+
+  const single = useSingleDisplay(); // true on phones / single-column layouts
+  const singleRef = useRef(single);
+  singleRef.current = single;
 
   const progressRef = useScrollProgress();
   const { startMusic } = useMusic(); // the song always plays: there is no on/off button any more
@@ -77,22 +95,44 @@ function App() {
     clearTimeout(openTimer.current);
     clearTimeout(gateTimer.current);
     clearTimeout(introTimer.current);
+    clearTimeout(padTimer.current);
   }, []);
+
+  // The tour moves on only when BOTH the tree has finished growing AND the text has been written.
+  // Then it waits TOUR_PAD_MS more, so the finished hero can be enjoyed before the page scrolls down.
+  const maybeStartTour = () => {
+    if (!treeDoneRef.current || !typedRef.current) return;
+    treeDoneRef.current = false; // run only once per growth
+    clearTimeout(padTimer.current);
+    padTimer.current = setTimeout(() => {
+      setStarting(false);
+      if (tourCfg.enabled) tour.start();
+      else scrollTo('together');
+    }, TOUR_PAD_MS);
+  };
+  startRef.current = maybeStartTour;
 
   // "Opening" means: the tree starts growing, then the tour moves on.
   const openEnvelope = () => {
     if (opened) return;
     autoRef.current = false;
+    treeDoneRef.current = false;
     clearTimeout(gateTimer.current);
+    clearTimeout(padTimer.current);
     setOpened(true);
     setStarting(true);
-    scrollToElement(stageRef.current, { block: 'center', duration: 1000 });
+
+    // Phone: bring the tree to the middle of the screen (it sits below the text).
+    // Web: the text and the tree are side by side, so the page stays where it is.
+    if (singleRef.current) {
+      scrollToElement(stageRef.current, { block: 'center', duration: 1000 });
+    }
+
     clearTimeout(openTimer.current);
-    // when the tree has finished growing, the tour moves on to the next section
+    // when the tree has finished growing (and the text is written), the tour moves on
     openTimer.current = setTimeout(() => {
-      setStarting(false);
-      if (tourCfg.enabled) tour.start();
-      else scrollTo('together');
+      treeDoneRef.current = true;
+      startRef.current?.();
     }, ENVELOPE_ANIMATION_MS);
   };
   openRef.current = openEnvelope;
@@ -104,31 +144,49 @@ function App() {
   };
 
   // Called by Hero once ALL the text has been written.
-  // If she came in through the gate, the tree now grows by itself (after a short pause).
   const handleTyped = useCallback(() => {
+    typedRef.current = true;
+
+    // Web: the tree is already growing next to the text, so just check if the tour can move on.
+    if (!singleRef.current) {
+      startRef.current?.();
+      return;
+    }
+
+    // Phone: if she came in through the gate, the tree now grows by itself (after a short pause).
     if (!autoRef.current) return;
     clearTimeout(gateTimer.current);
     gateTimer.current = setTimeout(() => openRef.current?.(), TREE_AFTER_TYPING_MS);
   }, []);
 
   // Her tap on "Tap to begin": the music starts right inside the tap (browsers require that).
-  // The hero text starts writing once the gate has faded. The tree waits until the text is finished.
   const beginFromGate = () => {
     startMusic();
 
+    const isSingle = singleRef.current;
+
+    // Phone: the text waits for the gate to be completely gone.
+    // Web: the text starts as the gate begins to fade.
     clearTimeout(introTimer.current);
-    introTimer.current = setTimeout(() => setIntroDone(true), INTRO_DONE_MS);
+    introTimer.current = setTimeout(() => setIntroDone(true), isSingle ? INTRO_DONE_MS : WEB_INTRO_MS);
 
     if (!tourCfg.enabled) return;
     // Keep the tour controls out of sight from this very first tap (no flash while the gate fades).
     setStarting(true);
     autoRef.current = true;
 
-    // safety net only: normally handleTyped starts the tree long before this
     clearTimeout(gateTimer.current);
-    gateTimer.current = setTimeout(() => {
-      if (autoRef.current) openRef.current?.();
-    }, TYPING_FALLBACK_MS);
+    if (isSingle) {
+      // safety net only: normally handleTyped starts the tree long before this
+      gateTimer.current = setTimeout(() => {
+        if (autoRef.current) openRef.current?.();
+      }, TYPING_FALLBACK_MS);
+    } else {
+      // Web: the tree grows together with the text, no waiting for the text to finish.
+      gateTimer.current = setTimeout(() => {
+        if (autoRef.current) openRef.current?.();
+      }, WEB_INTRO_MS);
+    }
   };
 
   // If the page is open when the clock hits the anniversary, celebrate automatically.
@@ -142,7 +200,9 @@ function App() {
   const replay = () => {
     clearTimeout(openTimer.current);
     clearTimeout(gateTimer.current);
+    clearTimeout(padTimer.current);
     autoRef.current = false;
+    treeDoneRef.current = false;
     tour.reset();
     window.dispatchEvent(new CustomEvent('tour:reset'));
     celebratedRef.current = false;
@@ -168,6 +228,7 @@ function App() {
         stageRef={stageRef}
         ready={introDone}
         onTyped={handleTyped}
+        sequential={single}
       />
       <OneYear onCelebrate={celebrate} />
       {celebrated && <Celebration />}

@@ -4,7 +4,6 @@ import App from './App.jsx';
 
 import './styles/styles.css';
 import './styles/enhance.css';
-import './styles/envelope-fix.css';
 import './styles/counter.css';
 import './styles/wall.css';
 import './styles/memories.css';
