@@ -9,7 +9,7 @@ export const content = {
   // The exact moment we hit 1 year.
   anniversaryDate: '2026-10-19T00:00:00+08:00',
 
-  openingLine: 'Happy 1 year, my love...',
+  openingLine: 'Happy 1 year, my love!',
   headline: 'One whole year of you and me.',
   celebrateMessage: 'Thank you for every single day of this year.',
 

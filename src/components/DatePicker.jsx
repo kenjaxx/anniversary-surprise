@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, Check, Copy, Heart, Send, X } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Heart, MessageCircle, Send, X } from 'lucide-react';
 import CircularGallery from './CircularGallery.jsx';
 import { datePicker as cfg } from '../data/dates.js';
 import { fireConfetti } from '../utils/confetti.js';
@@ -36,8 +36,8 @@ const BURST = (() => {
   return Array.from({ length: 16 }, (_, i) => ({
     glyph: glyphs[i % glyphs.length],
     size: 14 + Math.round(rnd() * 16),
-    dx: Math.round((rnd() - 0.5) * 340),
-    dy: -Math.round(80 + rnd() * 190),
+    dx: Math.round((rnd() - 0.5) * 380),
+    dy: -Math.round(80 + rnd() * 210),
     delay: Math.round(rnd() * 700),
   }));
 })();
@@ -161,6 +161,7 @@ function Picker({ onClose }) {
     if (step === 'done') fireConfetti(1400);
   }, [step]);
 
+  // Confirming: on a phone the messages app opens right away; on a computer the message is copied.
   const send = async () => {
     if (mobile) {
       window.location.href = smsHref(message);
@@ -173,18 +174,11 @@ function Picker({ onClose }) {
 
   const copyAgain = async () => setCopied(await copyText(message));
 
-  const status = mobile
-    ? copied
-      ? `Copied ♡ Paste it into your chat with ${cfg.sender} if you need to.`
-      : 'Your messages app is open with everything written. Press send and it’s official. 💌'
-    : copied
-      ? `Copied ♡ Now paste it to ${cfg.sender} at ${cfg.display}.`
-      : `Couldn’t copy automatically. Select the message below and send it to ${cfg.display}.`;
-
   return (
     <div
       className="dp-overlay"
       data-theme={option.theme}
+      data-step={step}
       role="dialog"
       aria-modal="true"
       aria-label={cfg.heading}
@@ -211,11 +205,14 @@ function Picker({ onClose }) {
       </button>
 
       <div className="dp-inner">
-        <header className="dp-head">
-          <span className="dp-rule" aria-hidden="true" />
-          <h2>{cfg.heading}</h2>
-          <p>{cfg.subheading}</p>
-        </header>
+        {/* The heading is only for the choosing screen. Once she has picked, it is gone. */}
+        {step === 'pick' && (
+          <header className="dp-head">
+            <span className="dp-rule" aria-hidden="true" />
+            <h2>{cfg.heading}</h2>
+            <p>{cfg.subheading}</p>
+          </header>
+        )}
 
         {step === 'pick' ? (
           <>
@@ -299,22 +296,20 @@ function Picker({ onClose }) {
 
             <div className="dp-ticket">
               <span className="dp-ticket-seal" aria-hidden="true">
-                <Heart size={15} fill="currentColor" />
+                <Heart size={22} fill="currentColor" />
               </span>
               <span className="dp-ticket-eyebrow">our next date</span>
               <span className="dp-ticket-emoji" aria-hidden="true">{option.emoji}</span>
               <h3>{option.title}</h3>
               <span className="dp-ticket-when">
-                <Check size={14} strokeWidth={2} aria-hidden="true" /> {when.label}
+                <Check size={18} strokeWidth={2} aria-hidden="true" /> {when.label}
               </span>
             </div>
 
             <p className="dp-done-title">It’s a date, love ♡</p>
             <p className="dp-done-lead">{option.doneLine}</p>
-            <p className="dp-done-status">{status}</p>
 
-            {/* On a computer there is no messages app: she has to paste, so she sees what she's sending.
-                On a phone the message is already written in her messages app, so it stays out of the way. */}
+            {/* On a computer she sees exactly what she is sending. On a phone it is already in her messages app. */}
             {!mobile && (
               <div className="dp-bubble-wrap">
                 <span className="dp-bubble-label">Your message to {cfg.sender}</span>
@@ -323,25 +318,17 @@ function Picker({ onClose }) {
             )}
 
             <div className="dp-actions">
-              {mobile ? (
-                <a className="dp-send" href={smsHref(message)}>
-                  <Send size={17} /> Open messages again
-                </a>
-              ) : (
-                <button className="dp-send" onClick={copyAgain}>
-                  <Copy size={17} /> {copied ? 'Copy again' : 'Try copying again'}
-                </button>
-              )}
-              <button className="dp-ghost" onClick={() => setStep('pick')}>
+              {/* Opens the messages app with the number and the text already filled in. */}
+              <a className="dp-send" href={smsHref(message)}>
+                <MessageCircle size={17} /> Open messages
+              </a>
+              <button className="dp-ghost" onClick={copyAgain}>
+                {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? 'Copied ♡' : 'Copy message'}
+              </button>
+              <button className="dp-ghost" onClick={() => { setCopied(false); setStep('pick'); }}>
                 <ArrowLeft size={16} /> Choose something else
               </button>
             </div>
-
-            {mobile && (
-              <button className="dp-link" onClick={copyAgain}>
-                {copied ? 'Copied ♡' : 'Messages didn’t open? Copy the message instead'}
-              </button>
-            )}
           </section>
         )}
       </div>
