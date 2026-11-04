@@ -1,0 +1,150 @@
+/* allphotos.css: the "All our photos" page, a polaroid clothesline.
+   A rope sags across the screen, the photos hang from it on wooden pegs, the middle one is biggest.
+   Only transform / opacity are animated, so it stays smooth. */
+
+.all-memories{
+  position:fixed;inset:0;z-index:35;
+  display:flex;flex-direction:column;overflow:hidden;
+  background:
+    radial-gradient(70% 45% at 50% 0%,rgba(233,184,114,.1),transparent 70%),
+    radial-gradient(80% 60% at 50% 112%,rgba(201,79,104,.2),transparent 70%),
+    linear-gradient(180deg,#1f1119,#130a13);
+  animation:fadeIn .6s ease both;
+}
+
+/* ---------- slim top bar ---------- */
+.am-bar{
+  flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px max(5vw,20px);
+  border-bottom:1px solid rgba(233,184,114,.18);
+}
+.am-bar-title{display:flex;align-items:center;gap:10px;color:#f3d6a3}
+.am-bar-title span{font:italic 500 20px var(--serif);color:#fff0e9}
+.am-bar-title em{
+  font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f0c9a0;
+  padding:5px 12px;border:1px solid rgba(233,184,114,.4);border-radius:99px;
+}
+.am-close{
+  width:42px;height:42px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.35);color:#fff;
+  transition:background .25s,transform .25s;
+}
+.am-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg)}
+
+/* ---------- the stage: rope + photos ---------- */
+.am-stage{
+  position:relative;flex:1 1 auto;min-height:0;overflow:hidden;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;
+}
+.am-stage:active{cursor:grabbing}
+
+.am-rope{position:absolute;left:0;top:0;pointer-events:none;z-index:1}
+.am-rope path{fill:none;stroke:#b9a184;stroke-width:1.6;stroke-linecap:round}
+
+/* ---------- one hanging polaroid ---------- */
+.am-card{
+  position:absolute;left:0;top:0;display:block;margin:0;padding:0;border:0;background:none;
+  text-align:center;cursor:pointer;transform-origin:50% 0;
+  transition:transform .9s cubic-bezier(.22,.7,.25,1),opacity .7s ease;
+  will-change:transform,opacity;
+  animation:amCardIn .8s ease backwards;
+  -webkit-tap-highlight-color:transparent;
+}
+.am-card:focus-visible{outline:none}
+.am-card:focus-visible .am-polaroid{box-shadow:0 0 0 3px #e9b872,0 22px 40px -18px rgba(0,0,0,.85)}
+@keyframes amCardIn{from{opacity:0}}
+
+/* a very slow sway, like it is hanging in a breeze */
+.am-sway{
+  position:relative;display:block;transform-origin:50% 0;
+  animation:amSway 7s ease-in-out var(--sd,0s) infinite alternate;
+}
+@keyframes amSway{from{transform:rotate(-.7deg)}to{transform:rotate(.7deg)}}
+
+/* the wooden peg */
+.am-peg{
+  position:absolute;top:-16px;left:50%;z-index:3;width:12px;height:32px;margin-left:-6px;
+  border-radius:3px;background:linear-gradient(90deg,#d6ad76,#ebcb9a 45%,#c4975c);
+  box-shadow:0 2px 5px rgba(0,0,0,.5);
+}
+.am-peg::after{
+  content:'';position:absolute;left:5px;top:9px;width:2px;height:13px;border-radius:2px;background:rgba(90,55,25,.55);
+}
+
+.am-polaroid{
+  display:block;padding:11px 11px 0;border-radius:2px;
+  background:#f1eee9;
+  box-shadow:0 22px 40px -18px rgba(0,0,0,.85);
+  transition:background-color .7s ease,box-shadow .7s ease;
+}
+.am-card.is-now .am-polaroid{
+  background:#fbf9f4;
+  box-shadow:0 32px 60px -20px rgba(0,0,0,.9),0 0 0 1px rgba(233,184,114,.35);
+}
+
+/* the photo keeps its own shape: nothing is cropped */
+.am-imgwrap{display:block;background:#e5dbd3}
+.am-img{
+  display:block;width:100%;height:auto;min-height:80px;
+  max-height:var(--imgmax);object-fit:contain;
+  pointer-events:none;-webkit-user-drag:none;
+}
+
+.am-label{
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  padding:14px 6px 16px;font:italic 500 17px/1.3 var(--serif);color:#4a3236;
+}
+
+/* ---------- bottom: caption on the left, controls on the right ---------- */
+.am-foot{
+  flex-shrink:0;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  padding:6px max(7vw,28px) 34px;
+}
+.am-info{max-width:min(440px,34vw);animation:mmRise .9s cubic-bezier(.22,.7,.25,1) both}
+.am-date{
+  display:block;margin-bottom:6px;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;
+  font-weight:700;color:#f0c9a0;
+}
+.am-info h3{font:500 clamp(26px,3.2vw,38px)/1.15 var(--serif);margin:0 0 8px;color:#fff6ef}
+.am-info p{
+  margin:0;font-size:15.5px;line-height:1.7;color:#cdb9b6;
+  display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+.am-nav{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.am-count{font-size:13px;letter-spacing:.2em;font-variant-numeric:tabular-nums;color:#e3d0cc}
+.am-count i{font-style:normal;opacity:.55;margin:0 4px}
+.am-arrow{
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;
+  transition:background .25s,transform .25s;
+}
+.am-arrow:hover{background:rgba(255,255,255,.16);transform:translateY(-1px)}
+.am-arrow.solid{background:#fff6ef;border-color:#fff6ef;color:#2a1420}
+.am-arrow.solid:hover{background:#fff}
+
+/* ---------- phones ---------- */
+@media(max-width:640px){
+  .am-bar{padding:12px 16px}
+  .am-bar-title span{font-size:17px}
+  .am-bar-title em{display:none}
+
+  /* controls stay clear of the tour bar at the bottom */
+  .am-foot{
+    flex-direction:column;align-items:stretch;gap:14px;
+    padding:4px 22px calc(70px + var(--tour-lift,0px));
+  }
+  .am-info{max-width:none}
+  .am-info h3{font-size:24px;margin-bottom:6px}
+  .am-info p{font-size:14.5px;-webkit-line-clamp:2;line-clamp:2}
+  .am-nav{justify-content:space-between}
+  .am-label{font-size:14px;padding:11px 4px 13px}
+  .am-polaroid{padding:8px 8px 0}
+}
+
+/* ---------- reduce motion ---------- */
+@media(prefers-reduced-motion:reduce){
+  .all-memories,.am-info,.am-card{animation:none!important}
+  .am-sway{animation:none}
+  .am-card{transition-duration:.01ms}
+}

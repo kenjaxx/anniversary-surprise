@@ -113,9 +113,7 @@ export default function Story() {
         </div>
 
         <div className="wall-actions">
-          <span className="wall-actions-lead">
-            Want to see every photo, uncropped?
-          </span>
+          
 
           <button
             className="view-all-button"
