@@ -19,11 +19,30 @@ main{overflow:visible;overflow-x:clip}
   background:radial-gradient(ellipse at 50% 50%,rgba(213,139,136,.45),transparent 70%);pointer-events:none;
 }
 .intro-gate.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
-.gate-inner{position:relative;max-width:420px}
+.gate-inner{position:relative;max-width:420px;display:flex;flex-direction:column;align-items:center}
 .gate-eyebrow{font:italic 18px var(--serif);color:#f0c9a0}
 .gate-title{font:italic 500 clamp(36px,10vw,54px)/1.15 var(--serif);margin:14px 0 0;color:#fff6ef}
+
+/* the little sticky note: "don't scroll, just watch" */
+.gate-sticky{
+  position:relative;width:min(300px,84vw);margin:34px 0 4px;padding:26px 22px 20px;
+  background:#fff3a8;color:#5a3a2a;border-radius:3px;
+  font:500 24px/1.2 'Caveat',cursive;text-align:center;
+  transform:rotate(-2.5deg);
+  box-shadow:0 14px 28px -14px rgba(0,0,0,.6);
+  animation:gateSticky 5s ease-in-out infinite;
+}
+.gate-tape{
+  position:absolute;top:-11px;left:50%;width:84px;height:22px;margin-left:-42px;
+  background:rgba(255,255,255,.55);transform:rotate(3deg);
+}
+@keyframes gateSticky{
+  0%,100%{transform:rotate(-2.5deg) translateY(0)}
+  50%{transform:rotate(-1.5deg) translateY(-4px)}
+}
+
 .gate-btn{
-  margin-top:34px;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:15px 30px;
+  margin-top:30px;display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:15px 30px;
   border:0;border-radius:99px;color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;
   background:linear-gradient(135deg,#f0798c,#d9566e);
   animation:gatePulse 2.4s ease-out infinite;
@@ -96,6 +115,8 @@ main{overflow:visible;overflow-x:clip}
 
   .eyebrow{font-size:11px}
   .counter-box strong{font-size:clamp(22px,7vw,30px)}
+
+  .gate-sticky{margin-top:28px;padding:24px 18px 18px;font-size:22px}
 }
 
 /* very small phones (iPhone SE, older Androids) */
@@ -112,7 +133,8 @@ main{overflow:visible;overflow-x:clip}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .gate-btn{animation:none}
+  .gate-btn,.gate-sticky{animation:none}
+  .gate-sticky{transform:rotate(-2.5deg)}
   .intro-gate{transition-duration:.01ms}
 }
 

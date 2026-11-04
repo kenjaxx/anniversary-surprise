@@ -1,5 +1,12 @@
 // PERSONALIZE: the "Where to next?" date picker shown at the end of the site.
 // Photos go in /public/dates/. If a photo is missing, a soft gradient card is shown instead.
+//
+// Each option also has a THEME. When she swipes to a card, the whole overlay
+// (background, fonts, colors, buttons) changes to that card's theme.
+//   theme : matches a [data-theme='...'] block and a .t-... layer in datePicker.css
+//   text  : color of the card labels drawn inside the gallery (dark themes = light text, and the reverse)
+//   font  : font of those card labels
+//   deco  : little glyphs that float in the background of that theme
 
 const SENDER = 'Kenji';   // who receives the text
 const FROM = 'Ehrica';    // who signs it
@@ -27,6 +34,10 @@ export const datePicker = {
       photo: '/dates/movie.jpg',
       from: '#2b1830',
       to: '#8a3550',
+      theme: 'movie',
+      text: '#ffffff',
+      font: "600 28px 'DM Sans', sans-serif",
+      deco: ['✦', '✧', '♡'],
     },
     {
       title: 'Night drive',
@@ -34,6 +45,10 @@ export const datePicker = {
       photo: '/dates/drive.jpg',
       from: '#1b1d36',
       to: '#6b4a7a',
+      theme: 'drive',
+      text: '#e8fbff',
+      font: "700 28px 'DM Sans', sans-serif",
+      deco: ['✦', '✧', '+'],
     },
     {
       title: 'Coffee date',
@@ -41,6 +56,10 @@ export const datePicker = {
       photo: '/dates/coffee.jpg',
       from: '#4a2e2a',
       to: '#d39a6e',
+      theme: 'coffee',
+      text: '#3b2a22',
+      font: "italic 500 30px 'Playfair Display', serif",
+      deco: ['❦', '❧', '✿'],
     },
     {
       title: 'Food trip',
@@ -48,6 +67,10 @@ export const datePicker = {
       photo: '/dates/food.jpg',
       from: '#7a2e45',
       to: '#e08a6a',
+      theme: 'food',
+      text: '#ffffff',
+      font: "400 34px 'Bebas Neue', Impact, sans-serif",
+      deco: ['✸', '★', '✺'],
     },
     {
       title: 'Chill night',
@@ -55,6 +78,10 @@ export const datePicker = {
       photo: '/dates/chill.jpg',
       from: '#2a1f3d',
       to: '#a8607a',
+      theme: 'chill',
+      text: '#fff3ea',
+      font: "italic 500 30px 'Playfair Display', serif",
+      deco: ['♡', '♥', '✦'],
     },
     {
       title: 'Walk and talk',
@@ -62,6 +89,10 @@ export const datePicker = {
       photo: '/dates/walk.jpg',
       from: '#b9704f',
       to: '#f0c9a0',
+      theme: 'walk',
+      text: '#fff8ee',
+      font: "italic 500 30px 'Playfair Display', serif",
+      deco: ['✧', '♡', '·'],
     },
   ],
 

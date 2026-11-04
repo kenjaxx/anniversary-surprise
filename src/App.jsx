@@ -21,6 +21,8 @@ import Letter from './components/Letter.jsx';
 import Closing from './components/Closing.jsx';
 import TourBar from './components/TourBar.jsx';
 
+const GATE_FADE_WAIT_MS = 700; // let the "Tap to begin" screen mostly fade out before the show starts
+
 function App() {
   const [opened, setOpened] = useState(false);
   const [starting, setStarting] = useState(false); // envelope tapped, tour about to begin
@@ -28,6 +30,7 @@ function App() {
   const celebratedRef = useRef(false);
   const stageRef = useRef(null);
   const openTimer = useRef(null);
+  const gateTimer = useRef(null);
 
   const progressRef = useScrollProgress();
   const { musicOn, musicStatus, toggleMusic, startMusic } = useMusic();
@@ -59,7 +62,10 @@ function App() {
     isCelebrated: () => celebratedRef.current,
   });
 
-  useEffect(() => () => clearTimeout(openTimer.current), []);
+  useEffect(() => () => {
+    clearTimeout(openTimer.current);
+    clearTimeout(gateTimer.current);
+  }, []);
 
   const openEnvelope = () => {
     if (opened) return;
@@ -80,6 +86,15 @@ function App() {
     else tour.restart();
   };
 
+  // Her tap on "Tap to begin": the music starts right inside the tap (browsers require that),
+  // then, once the gate has faded, the envelope opens and the tour plays by itself.
+  const beginFromGate = () => {
+    startMusic();
+    if (!tourCfg.enabled) return;
+    clearTimeout(gateTimer.current);
+    gateTimer.current = setTimeout(openEnvelope, GATE_FADE_WAIT_MS);
+  };
+
   // If the page is open when the clock hits the anniversary, celebrate automatically.
   useEffect(() => {
     const ms = new Date(content.anniversaryDate).getTime() - Date.now();
@@ -90,6 +105,7 @@ function App() {
 
   const replay = () => {
     clearTimeout(openTimer.current);
+    clearTimeout(gateTimer.current);
     tour.reset();
     window.dispatchEvent(new CustomEvent('tour:reset'));
     celebratedRef.current = false;
@@ -101,7 +117,7 @@ function App() {
 
   return (
     <main>
-      {music.gate && <IntroGate onEnter={startMusic} />}
+      {music.gate && <IntroGate onEnter={beginFromGate} />}
 
       <div className="scroll-progress" ref={progressRef} />
       <Petals />

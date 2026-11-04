@@ -5,6 +5,7 @@ import { content } from '../data/content.js';
 const FADE_MS = 950;
 
 // The first screen. Her tap is the "permission" browsers need, so the music can start with sound.
+// The same tap also starts the automatic tour (App.jsx does that inside onEnter).
 export default function IntroGate({ onEnter }) {
   const [leaving, setLeaving] = useState(false);
   const [gone, setGone] = useState(false);
@@ -25,7 +26,7 @@ export default function IntroGate({ onEnter }) {
 
   const enter = () => {
     if (leaving) return;
-    onEnter();          // starts the music, directly inside her tap
+    onEnter();          // starts the music and the auto tour, directly inside her tap
     setLeaving(true);
   };
 
@@ -36,6 +37,12 @@ export default function IntroGate({ onEnter }) {
       <div className="gate-inner">
         <span className="gate-eyebrow">for {content.partnerNickname}</span>
         <h1 className="gate-title">I made you something.</h1>
+
+        <div className="gate-sticky">
+          <span className="gate-tape" aria-hidden="true" />
+          psst... don’t scroll! Let me show you around. Just sit back and watch ♡
+        </div>
+
         <button className="gate-btn" onClick={enter} autoFocus>
           Tap to begin <Heart size={17} fill="currentColor" />
         </button>

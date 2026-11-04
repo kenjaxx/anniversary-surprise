@@ -1,87 +1,313 @@
-/* datePicker.css: the "Where to next?" overlay at the end of the site. */
+/* datePicker.css: the "Where to next?" overlay at the end of the site.
+   Every card has a theme. Colors, fonts and shapes come from the variables in the
+   [data-theme] blocks; the backgrounds are the stacked .dp-bg-layer.t-... layers. */
 
+/* ================= base + default theme (chill) ================= */
 .dp-overlay{
   position:fixed;inset:0;z-index:60;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column;
-  color:#fff0e9;
-  background:
-    radial-gradient(60% 40% at 12% 0%,rgba(233,184,114,.14),transparent 70%),
-    radial-gradient(60% 50% at 92% 8%,rgba(232,110,130,.18),transparent 70%),
-    radial-gradient(90% 60% at 50% 112%,rgba(201,79,104,.26),transparent 70%),
-    linear-gradient(180deg,#2a1420,#1a0f1f);
+  background:#1a0f1f;color:var(--dp-ink);
   animation:fadeIn .8s ease both;
+
+  --dp-ink:#fff6ef;
+  --dp-sub:#e3c6bf;
+  --dp-accent:#e9b872;
+  --dp-deco:#f0a3b3;
+  --dp-panel:rgba(255,255,255,.06);
+  --dp-panel-line:rgba(233,184,114,.35);
+  --dp-panel-shadow:0 20px 50px -24px rgba(0,0,0,.6);
+  --dp-radius:18px;
+  --dp-chip-line:rgba(233,184,114,.45);
+  --dp-chip-on:rgba(233,184,114,.18);
+  --dp-btn:linear-gradient(135deg,#f0798c,#d9566e);
+  --dp-btn-ink:#fff;
+  --dp-btn-shadow:0 14px 30px -10px rgba(232,110,130,.7);
+  --dp-btn-radius:99px;
+  --dp-head-font:'Playfair Display',serif;
+  --dp-head-weight:500;
+  --dp-head-style:normal;
+  --dp-head-case:none;
+  --dp-head-scale:1;
+  --dp-sub-font:'Playfair Display',serif;
+  --dp-close-bg:rgba(255,255,255,.08);
+  --dp-close-line:rgba(255,255,255,.35);
+  --dp-close-ink:#fff;
 }
 
+/* ---------- 1. Movie night: dreamy violet glass ---------- */
+.dp-overlay[data-theme='movie']{
+  --dp-ink:#ffffff;--dp-sub:#e9e0ff;--dp-accent:#d9c8ff;--dp-deco:#ffffff;
+  --dp-panel:rgba(255,255,255,.14);--dp-panel-line:rgba(255,255,255,.4);
+  --dp-panel-shadow:0 24px 60px -24px rgba(20,8,70,.7);--dp-radius:22px;
+  --dp-chip-line:rgba(255,255,255,.5);--dp-chip-on:rgba(255,255,255,.26);
+  --dp-btn:#dcd0ff;--dp-btn-ink:#2b1c63;--dp-btn-shadow:0 14px 30px -10px rgba(20,8,70,.6);
+  --dp-head-font:'DM Sans',sans-serif;--dp-head-weight:600;--dp-sub-font:'DM Sans',sans-serif;
+}
+
+/* ---------- 2. Night drive: neon ---------- */
+.dp-overlay[data-theme='drive']{
+  --dp-ink:#ffffff;--dp-sub:#c9d8ff;--dp-accent:#5ee7ff;--dp-deco:#ff6fb8;
+  --dp-panel:rgba(14,8,48,.62);--dp-panel-line:#7a5cff;
+  --dp-panel-shadow:0 0 28px rgba(122,92,255,.55),inset 0 0 22px rgba(122,92,255,.18);--dp-radius:16px;
+  --dp-chip-line:rgba(94,231,255,.6);--dp-chip-on:rgba(94,231,255,.16);
+  --dp-btn:linear-gradient(135deg,#ff3d9a,#7a5cff);--dp-btn-ink:#fff;
+  --dp-btn-shadow:0 0 26px rgba(255,61,154,.65);
+  --dp-head-font:'DM Sans',sans-serif;--dp-head-weight:700;--dp-sub-font:'DM Sans',sans-serif;
+  --dp-close-line:rgba(94,231,255,.7);
+}
+
+/* ---------- 3. Coffee date: cream paper (light theme) ---------- */
+.dp-overlay[data-theme='coffee']{
+  --dp-ink:#3b2a22;--dp-sub:#6b5546;--dp-accent:#8a6a4f;--dp-deco:#7d9a6a;
+  --dp-panel:rgba(255,251,244,.72);--dp-panel-line:rgba(110,85,60,.32);
+  --dp-panel-shadow:0 18px 40px -26px rgba(90,60,30,.55);--dp-radius:24px;
+  --dp-chip-line:rgba(110,85,60,.4);--dp-chip-on:rgba(110,85,60,.14);
+  --dp-btn:#3d2e25;--dp-btn-ink:#f6ecdc;--dp-btn-shadow:0 12px 24px -12px rgba(61,46,37,.7);
+  --dp-head-font:'Playfair Display',serif;--dp-head-weight:500;--dp-sub-font:'Playfair Display',serif;
+  --dp-close-bg:rgba(255,255,255,.55);--dp-close-line:rgba(110,85,60,.4);--dp-close-ink:#3b2a22;
+}
+
+/* ---------- 4. Food trip: bold collage ---------- */
+.dp-overlay[data-theme='food']{
+  --dp-ink:#ffffff;--dp-sub:#d9d4cc;--dp-accent:#ff7a9c;--dp-deco:#ff5c87;
+  --dp-panel:#1b1b1d;--dp-panel-line:#f4efe6;
+  --dp-panel-shadow:6px 6px 0 #ff5c87;--dp-radius:6px;
+  --dp-chip-line:rgba(244,239,230,.6);--dp-chip-on:#ff5c87;
+  --dp-btn:#ff5c87;--dp-btn-ink:#121212;--dp-btn-shadow:4px 4px 0 #f4efe6;--dp-btn-radius:6px;
+  --dp-head-font:'Bebas Neue',Impact,'DM Sans',sans-serif;--dp-head-weight:400;--dp-head-case:uppercase;
+  --dp-head-scale:1.3;--dp-sub-font:'DM Sans',sans-serif;
+}
+
+/* ---------- 5. Chill night: wine satin + gold ---------- */
+.dp-overlay[data-theme='chill']{
+  --dp-ink:#fff0e9;--dp-sub:#e9c7c4;--dp-accent:#e9b872;--dp-deco:#e9b872;
+  --dp-panel:rgba(255,255,255,.07);--dp-panel-line:rgba(233,184,114,.5);
+}
+
+/* ---------- 6. Walk and talk: golden hour ---------- */
+.dp-overlay[data-theme='walk']{
+  --dp-ink:#fff8ee;--dp-sub:#ffe9d0;--dp-accent:#ffd9a0;--dp-deco:#fff0c8;
+  --dp-panel:rgba(40,28,64,.38);--dp-panel-line:rgba(255,230,200,.5);
+  --dp-panel-shadow:0 22px 50px -24px rgba(40,20,50,.7);--dp-radius:22px;
+  --dp-chip-line:rgba(255,230,200,.55);--dp-chip-on:rgba(255,217,160,.25);
+  --dp-btn:#ffd9a0;--dp-btn-ink:#5a2f2a;--dp-btn-shadow:0 14px 30px -10px rgba(120,50,40,.6);
+}
+
+/* ================= backgrounds (one stacked layer per theme) ================= */
+.dp-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.dp-bg-layer{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;overflow:hidden}
+.dp-bg-layer.on{opacity:1}
+.dp-bg-layer::before,.dp-bg-layer::after{content:'';position:absolute;pointer-events:none}
+
+/* floating glyphs */
+.dp-deco{
+  position:absolute;bottom:-40px;left:var(--l);font-size:var(--s);line-height:1;color:var(--dp-deco,#fff);
+  opacity:0;animation:dpFloat var(--dur) linear var(--dl) infinite;
+}
+.dp-bg-layer:not(.on) .dp-deco{animation-play-state:paused}
+@keyframes dpFloat{
+  0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+  10%{opacity:.55}
+  90%{opacity:.3}
+  100%{transform:translate3d(28px,-112vh,0) rotate(120deg);opacity:0}
+}
+@keyframes dpFall{
+  0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+  10%{opacity:.5}
+  90%{opacity:.3}
+  100%{transform:translate3d(-30px,112vh,0) rotate(200deg);opacity:0}
+}
+
+/* 1. movie: violet sky + projector beam */
+.t-movie{
+  --dp-deco:#ffffff;
+  background:
+    radial-gradient(60% 40% at 50% 0%,rgba(255,255,255,.3),transparent 70%),
+    radial-gradient(70% 50% at 90% 95%,rgba(255,120,200,.38),transparent 70%),
+    linear-gradient(165deg,#2b1c63,#5a49b8 55%,#a88be0);
+}
+.t-movie::before{
+  top:0;left:15%;right:15%;height:62%;
+  background:linear-gradient(rgba(255,255,255,.2),transparent 85%);
+  clip-path:polygon(42% 0,58% 0,100% 100%,0 100%);
+}
+
+/* 2. drive: neon city + grid floor */
+.t-drive{
+  --dp-deco:#ff6fb8;
+  background:
+    radial-gradient(60% 40% at 50% 100%,rgba(255,61,154,.45),transparent 70%),
+    radial-gradient(50% 40% at 82% 8%,rgba(94,231,255,.2),transparent 70%),
+    linear-gradient(180deg,#070618,#160c3d 60%,#2a0f4d);
+}
+.t-drive::before{
+  left:0;right:0;bottom:0;height:24vh;background:#05040f;
+  clip-path:polygon(0 100%,0 60%,5% 60%,5% 35%,10% 35%,10% 55%,15% 55%,15% 20%,20% 20%,20% 50%,27% 50%,27% 30%,32% 30%,32% 62%,40% 62%,40% 15%,46% 15%,46% 45%,52% 45%,52% 58%,60% 58%,60% 25%,66% 25%,66% 52%,72% 52%,72% 38%,78% 38%,78% 60%,85% 60%,85% 28%,91% 28%,91% 50%,100% 50%,100% 100%);
+  box-shadow:0 -10px 40px rgba(255,61,154,.4);
+}
+.t-drive::after{
+  left:0;right:0;bottom:0;height:12vh;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,61,154,.55) 0 1px,transparent 1px 46px),
+    repeating-linear-gradient(0deg,rgba(94,231,255,.45) 0 1px,transparent 1px 20px);
+  -webkit-mask-image:linear-gradient(transparent,#000);mask-image:linear-gradient(transparent,#000);
+}
+
+/* 3. coffee: cream paper + leaves falling */
+.t-coffee{
+  --dp-deco:#7d9a6a;
+  background:
+    radial-gradient(70% 50% at 18% 8%,rgba(255,255,255,.6),transparent 70%),
+    radial-gradient(60% 50% at 88% 92%,rgba(176,140,100,.28),transparent 65%),
+    #efe3d0;
+}
+.t-coffee::before{
+  inset:0;background:repeating-linear-gradient(0deg,rgba(120,90,60,.045) 0 1px,transparent 1px 3px);
+}
+.t-coffee::after{
+  inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 55%,rgba(120,85,55,.24));
+}
+.t-coffee .dp-deco{bottom:auto;top:-40px;animation-name:dpFall}
+
+/* 4. food: black collage, halftone dots, tape + paper scrap */
+.t-food{
+  --dp-deco:#ff5c87;
+  background:
+    radial-gradient(rgba(255,255,255,.08) 1.4px,transparent 1.7px) 0 0/14px 14px,
+    radial-gradient(50% 40% at 85% 12%,rgba(255,92,135,.28),transparent 70%),
+    #101012;
+}
+.t-food::before{
+  top:11%;right:-8%;width:50%;height:46px;background:#ff5c87;transform:rotate(-9deg);opacity:.92;
+}
+.t-food::after{
+  bottom:-26px;left:-6%;width:62%;height:96px;background:#f4efe6;transform:rotate(3deg);opacity:.95;
+}
+
+/* 5. chill: wine satin with a soft sheen */
+.t-chill{
+  --dp-deco:#e9b872;
+  background:
+    radial-gradient(60% 40% at 12% 0%,rgba(233,184,114,.2),transparent 70%),
+    radial-gradient(60% 50% at 92% 8%,rgba(232,110,130,.26),transparent 70%),
+    radial-gradient(90% 60% at 50% 112%,rgba(201,79,104,.36),transparent 70%),
+    linear-gradient(165deg,#3a0b1e,#6d1530 52%,#2a0a18);
+}
+.t-chill::before{
+  inset:-20% -10%;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,200,200,.12) 48%,transparent 60%);
+}
+
+/* 6. walk: golden hour sky, sun and sea */
+.t-walk{
+  --dp-deco:#fff0c8;
+  background:linear-gradient(180deg,#46386f 0%,#c4678d 30%,#f6a35e 52%,#ffd29a 64%,#3d4f78 64.2%,#27345a 100%);
+}
+.t-walk::before{
+  left:50%;top:44%;width:min(46vw,380px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,#fff3c8 0,#ffd08a 28%,rgba(255,170,110,.4) 55%,transparent 72%);
+}
+.t-walk::after{
+  left:0;right:0;bottom:0;height:36%;
+  background:repeating-linear-gradient(0deg,rgba(255,210,150,.13) 0 2px,transparent 2px 14px);
+  -webkit-mask-image:linear-gradient(transparent,#000 30%);mask-image:linear-gradient(transparent,#000 30%);
+}
+
+/* ================= layout ================= */
 .dp-close{
   position:absolute;top:max(16px,env(safe-area-inset-top));right:max(18px,3vw);z-index:5;
   width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.35);color:#fff;
-  transition:background .25s,transform .25s;
+  background:var(--dp-close-bg);border:1px solid var(--dp-close-line);color:var(--dp-close-ink);
+  transition:background .25s,transform .25s,color .7s,border-color .7s;
 }
-.dp-close:hover{background:rgba(255,255,255,.2);transform:rotate(90deg)}
+.dp-close:hover{transform:rotate(90deg)}
 
 .dp-inner{
+  position:relative;z-index:1;
   width:min(1100px,100%);margin:auto;display:flex;flex-direction:column;align-items:center;text-align:center;
   padding:clamp(40px,7vh,72px) 20px max(32px,env(safe-area-inset-bottom));
 }
 
 /* ---------- heading ---------- */
 .dp-head{max-width:560px;animation:mmRise 1s cubic-bezier(.22,.7,.25,1) .15s backwards}
-.dp-rule{display:block;width:1px;height:40px;margin:0 auto 18px;background:linear-gradient(transparent,#c9a063)}
+.dp-rule{display:block;width:1px;height:40px;margin:0 auto 18px;background:linear-gradient(transparent,var(--dp-accent))}
 .dp-head h2{
-  font:500 clamp(34px,5.4vw,58px)/1.08 var(--serif);letter-spacing:-.02em;margin:0 0 12px;color:#fff6ef;
+  font-family:var(--dp-head-font);font-weight:var(--dp-head-weight);font-style:var(--dp-head-style);
+  text-transform:var(--dp-head-case);
+  font-size:calc(clamp(34px,5.4vw,58px) * var(--dp-head-scale));
+  line-height:1.08;letter-spacing:-.02em;margin:0 0 12px;color:var(--dp-ink);
+  transition:color .7s;
 }
-.dp-head p{font:italic 18px/1.6 var(--serif);color:#e3c6bf;margin:0}
+.dp-overlay[data-theme='food'] .dp-head h2{letter-spacing:.01em;line-height:.98}
+.dp-head p{font:italic 18px/1.6 var(--dp-sub-font);color:var(--dp-sub);margin:0;transition:color .7s}
 
 /* ---------- gallery ---------- */
 .dp-stage{
   width:100%;height:clamp(300px,50vh,480px);position:relative;margin-top:10px;
   animation:fadeIn 1.2s ease .3s backwards;
 }
-.dp-hint{margin:2px 0 0;font-size:13px;letter-spacing:.03em;color:#cfa9a6}
+.dp-hint{margin:2px 0 0;font-size:13px;letter-spacing:.03em;color:var(--dp-sub);opacity:.85;transition:color .7s}
 
 /* If WebGL2 is not available: a simple row of cards */
 .dp-fallback{
   width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:26px 0 10px;
 }
 .dp-fallback-card{
-  min-height:110px;padding:14px;border-radius:14px;border:1px solid rgba(233,184,114,.3);color:#fff6ef;
+  min-height:110px;padding:14px;border-radius:14px;border:1px solid var(--dp-panel-line);color:#fff6ef;
   font:italic 500 20px var(--serif);background:linear-gradient(160deg,var(--from),var(--to));opacity:.7;
   transition:opacity .25s,border-color .25s,transform .25s;
 }
-.dp-fallback-card.on{opacity:1;border-color:#e9b872;transform:translateY(-3px)}
+.dp-fallback-card.on{opacity:1;border-color:var(--dp-accent);transform:translateY(-3px)}
 
 /* ---------- pick panel ---------- */
 .dp-panel{
   width:min(580px,100%);margin-top:26px;padding:26px 28px 28px;
-  background:rgba(255,255,255,.05);border:1px solid rgba(233,184,114,.28);border-radius:18px;
+  background:var(--dp-panel);border:1px solid var(--dp-panel-line);border-radius:var(--dp-radius);
+  box-shadow:var(--dp-panel-shadow);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:background-color .7s,border-color .7s,box-shadow .7s,border-radius .7s;
   animation:mmRise 1s cubic-bezier(.22,.7,.25,1) .5s backwards;
 }
-.dp-label{font-size:13px;letter-spacing:.04em;color:#f0c9a0}
-.dp-pick{font:italic 500 clamp(28px,4vw,36px)/1.15 var(--serif);margin:6px 0 8px;color:#fff6ef}
-.dp-pick-line{margin:0 auto 20px;max-width:440px;font-size:15px;line-height:1.75;color:#e3c6bf}
+.dp-label{font-size:13px;letter-spacing:.04em;color:var(--dp-accent);transition:color .7s}
+.dp-pick{
+  font-family:var(--dp-head-font);font-weight:var(--dp-head-weight);text-transform:var(--dp-head-case);
+  font-style:italic;
+  font-size:calc(clamp(28px,4vw,36px) * var(--dp-head-scale));
+  line-height:1.15;margin:6px 0 8px;color:var(--dp-ink);
+  transition:color .7s;animation:mmRise .5s cubic-bezier(.22,.7,.25,1) both;
+}
+.dp-overlay[data-theme='food'] .dp-pick,
+.dp-overlay[data-theme='movie'] .dp-pick,
+.dp-overlay[data-theme='drive'] .dp-pick{font-style:normal}
+.dp-pick-line{
+  margin:0 auto 20px;max-width:440px;font-size:15px;line-height:1.75;color:var(--dp-sub);
+  transition:color .7s;animation:mmRise .5s cubic-bezier(.22,.7,.25,1) .05s both;
+}
 
 .dp-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:22px}
 .dp-chip{
-  padding:10px 18px;border-radius:99px;font-size:14px;color:#f3d6a3;background:transparent;
-  border:1px solid rgba(233,184,114,.4);transition:background .25s,border-color .25s,color .25s;
+  padding:10px 18px;border-radius:var(--dp-btn-radius);font-size:14px;color:var(--dp-accent);background:transparent;
+  border:1px solid var(--dp-chip-line);
+  transition:background-color .35s,border-color .35s,color .7s;
 }
-.dp-chip:hover{border-color:#e9b872}
-.dp-chip[aria-pressed='true']{background:rgba(233,184,114,.16);border-color:#e9b872;color:#fff6ef}
+.dp-chip:hover{border-color:var(--dp-accent)}
+.dp-chip[aria-pressed='true']{background:var(--dp-chip-on);border-color:var(--dp-accent);color:var(--dp-ink)}
+.dp-overlay[data-theme='food'] .dp-chip[aria-pressed='true']{color:#121212}
+.dp-overlay[data-theme='food'] .dp-chip{border-radius:6px}
 
 /* ---------- buttons ---------- */
 .dp-send{
   display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:14px 30px;
-  border:0;border-radius:99px;color:#fff;font-size:15px;font-weight:600;letter-spacing:.02em;text-decoration:none;
-  background:linear-gradient(135deg,#f0798c,#d9566e);box-shadow:0 14px 30px -10px rgba(232,110,130,.7);
+  border:0;border-radius:var(--dp-btn-radius);color:var(--dp-btn-ink);font-size:15px;font-weight:600;letter-spacing:.02em;text-decoration:none;
+  background:var(--dp-btn);box-shadow:var(--dp-btn-shadow);
   transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .3s;
 }
-.dp-send:hover{transform:translateY(-2px);box-shadow:0 18px 34px -10px rgba(232,110,130,.85)}
+.dp-send:hover{transform:translateY(-2px)}
 .dp-ghost{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 22px;
-  border-radius:99px;font-size:14px;color:#f3d6a3;background:transparent;border:1px solid rgba(233,184,114,.4);
-  transition:background .25s;
+  border-radius:var(--dp-btn-radius);font-size:14px;color:var(--dp-accent);background:transparent;border:1px solid var(--dp-chip-line);
+  transition:background-color .25s,color .7s;
 }
-.dp-ghost:hover{background:rgba(233,184,114,.12)}
+.dp-ghost:hover{background:var(--dp-chip-on)}
 
 /* ---------- confirmation ---------- */
 .dp-done{
@@ -90,14 +316,17 @@
 }
 .dp-done-icon{
   width:52px;height:52px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px;
-  color:#e9b872;border:1px solid rgba(233,184,114,.6);background:rgba(233,184,114,.1);
+  color:var(--dp-accent);border:1px solid var(--dp-panel-line);background:var(--dp-chip-on);
 }
-.dp-done h3{font:italic 500 clamp(28px,4vw,36px)/1.15 var(--serif);margin:0 0 10px;color:#fff6ef}
-.dp-done>p{margin:0 0 20px;max-width:440px;font-size:15px;line-height:1.75;color:#e3c6bf}
+.dp-done h3{
+  font-family:var(--dp-head-font);font-weight:var(--dp-head-weight);text-transform:var(--dp-head-case);
+  font-size:calc(clamp(28px,4vw,36px) * var(--dp-head-scale));line-height:1.15;margin:0 0 10px;color:var(--dp-ink);
+}
+.dp-done>p{margin:0 0 20px;max-width:440px;font-size:15px;line-height:1.75;color:var(--dp-sub)}
 .dp-quote{
-  margin:0 0 24px;padding:18px 22px;width:100%;border-radius:14px;
-  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);
-  font:italic 17px/1.65 var(--serif);color:#fff0e9;user-select:text;-webkit-user-select:text;
+  margin:0 0 24px;padding:18px 22px;width:100%;border-radius:var(--dp-radius);
+  background:var(--dp-panel);border:1px solid var(--dp-panel-line);box-shadow:var(--dp-panel-shadow);
+  font:italic 17px/1.65 var(--dp-sub-font);color:var(--dp-ink);user-select:text;-webkit-user-select:text;
 }
 .dp-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 
@@ -115,9 +344,16 @@
   .dp-send{width:100%}
   .dp-actions{width:100%}
   .dp-ghost{width:100%}
+  .dp-overlay[data-theme='food'] .dp-head h2{font-size:calc(clamp(34px,11vw,48px) * 1.2)}
+  .t-food::before{height:34px}
+  .t-food::after{height:70px}
+  /* backdrop blur is expensive on phones */
+  .dp-panel{-webkit-backdrop-filter:none;backdrop-filter:none}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .dp-overlay,.dp-head,.dp-stage,.dp-panel,.dp-done{animation:none}
+  .dp-overlay,.dp-head,.dp-stage,.dp-panel,.dp-done,.dp-pick,.dp-pick-line{animation:none}
+  .dp-bg-layer{transition-duration:.01ms}
+  .dp-deco{display:none}
   .dp-close:hover{transform:none}
 }

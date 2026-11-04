@@ -5,9 +5,24 @@ import CircularGallery from './CircularGallery.jsx';
 import { datePicker as cfg } from '../data/dates.js';
 import '../styles/datePicker.css';
 
-const GALLERY_FONT = "italic 500 30px 'Playfair Display', serif";
-
 // ---------- small helpers ----------
+
+// Floating glyphs for each theme's background. Generated once, from a tiny seeded generator,
+// so they never jump around between renders.
+const DECO = cfg.options.map((o, oi) => {
+  let seed = oi * 97 + 13;
+  const rnd = () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+  return Array.from({ length: 10 }, (_, i) => ({
+    glyph: o.deco[i % o.deco.length],
+    left: 3 + rnd() * 94,
+    size: 12 + Math.round(rnd() * 18),
+    dur: 10 + rnd() * 9,
+    delay: -rnd() * 16,
+  }));
+});
 
 // A quiet gradient card, used when a photo file is missing.
 function gradientImage(from, to) {
@@ -136,7 +151,30 @@ function Picker({ onClose }) {
   const copyAgain = async () => setCopied(await copyText(message));
 
   return (
-    <div className="dp-overlay" role="dialog" aria-modal="true" aria-label={cfg.heading}>
+    <div
+      className="dp-overlay"
+      data-theme={option.theme}
+      role="dialog"
+      aria-modal="true"
+      aria-label={cfg.heading}
+    >
+      {/* One background per theme, stacked. Only the chosen one is visible, so they cross-fade. */}
+      <div className="dp-bg" aria-hidden="true">
+        {cfg.options.map((o, i) => (
+          <div key={o.theme} className={`dp-bg-layer t-${o.theme}${i === index ? ' on' : ''}`}>
+            {DECO[i].map((d, k) => (
+              <span
+                key={k}
+                className="dp-deco"
+                style={{ '--l': `${d.left}%`, '--s': `${d.size}px`, '--dur': `${d.dur}s`, '--dl': `${d.delay}s` }}
+              >
+                {d.glyph}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+
       <button className="dp-close" onClick={onClose} aria-label="Close">
         <X size={20} />
       </button>
@@ -165,8 +203,8 @@ function Picker({ onClose }) {
                   scrollEase={0.07}
                   snap
                   openOnClick={false}
-                  textColor="#fff3ea"
-                  font={GALLERY_FONT}
+                  textColor={option.text}
+                  font={option.font}
                   onActiveChange={setIndex}
                 />
               </div>
@@ -180,6 +218,8 @@ function Picker({ onClose }) {
                     className={`dp-fallback-card${i === index ? ' on' : ''}`}
                     style={{ '--from': o.from, '--to': o.to }}
                     onClick={() => setIndex(i)}
+                    onMouseEnter={() => setIndex(i)}
+                    onFocus={() => setIndex(i)}
                   >
                     {o.title}
                   </button>
@@ -190,8 +230,8 @@ function Picker({ onClose }) {
 
             <section className="dp-panel" aria-live="polite">
               <span className="dp-label">Your pick</span>
-              <h3 className="dp-pick">{option.title}</h3>
-              <p className="dp-pick-line">{option.line}</p>
+              <h3 className="dp-pick" key={option.title}>{option.title}</h3>
+              <p className="dp-pick-line" key={option.line}>{option.line}</p>
 
               <div className="dp-chips" role="group" aria-label="When">
                 {cfg.whenOptions.map(w => (
