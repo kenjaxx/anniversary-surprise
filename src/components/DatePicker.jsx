@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowLeft, Check, Copy, Heart, MessageCircle, Send, X } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Heart, MessageCircle, X } from 'lucide-react';
 import CircularGallery from './CircularGallery.jsx';
 import { datePicker as cfg } from '../data/dates.js';
 import { fireConfetti } from '../utils/confetti.js';
@@ -161,13 +161,9 @@ function Picker({ onClose }) {
     if (step === 'done') fireConfetti(1400);
   }, [step]);
 
-  // Confirming: on a phone the messages app opens right away; on a computer the message is copied.
-  const send = async () => {
-    if (mobile) {
-      window.location.href = smsHref(message);
-      setStep('done');
-      return;
-    }
+  // Confirming never leaves the page, on any device. The message is copied as a backup,
+  // and the confirmation screen has the "Open messages" button.
+  const confirm = async () => {
     setCopied(await copyText(message));
     setStep('done');
   };
@@ -274,9 +270,9 @@ function Picker({ onClose }) {
                 ))}
               </div>
 
-              <button className="dp-send" onClick={send}>
-                {mobile ? <Send size={17} /> : <Copy size={17} />}
-                {mobile ? `Send to ${cfg.sender}` : `Copy message for ${cfg.sender}`}
+              <button className="dp-send" onClick={confirm}>
+                {mobile ? <Heart size={17} fill="currentColor" /> : <Copy size={17} />}
+                {mobile ? 'Pick this date' : `Copy message for ${cfg.sender}`}
               </button>
             </section>
           </>
@@ -309,7 +305,7 @@ function Picker({ onClose }) {
             <p className="dp-done-title">It’s a date, love ♡</p>
             <p className="dp-done-lead">{option.doneLine}</p>
 
-            {/* On a computer she sees exactly what she is sending. On a phone it is already in her messages app. */}
+            {/* On a computer she sees exactly what she is sending. On a phone the button below fills it in for her. */}
             {!mobile && (
               <div className="dp-bubble-wrap">
                 <span className="dp-bubble-label">Your message to {cfg.sender}</span>

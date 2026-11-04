@@ -83,6 +83,11 @@ export default function FlipCard({
   const gxPct = useMotionTemplate`${gx}%`;
   const gyPct = useMotionTemplate`${gy}%`;
 
+  // Which side is turned toward the viewer. Safari on iPhone does not always honour
+  // backface-visibility, so each face is also shown or hidden directly from the angle.
+  const frontVis = useTransform(turn, t => (Math.cos((t * Math.PI) / 180) >= 0 ? 'visible' : 'hidden'));
+  const backVis = useTransform(turn, t => (Math.cos((t * Math.PI) / 180) < 0 ? 'visible' : 'hidden'));
+
   const settle = (to, velocity, instant) => {
     spin.current?.stop();
     target.current = to;
@@ -253,14 +258,24 @@ export default function FlipCard({
         />
       ) : null}
       <motion.div className="flip-card__rotor" style={reduce ? undefined : rotorStyle}>
-        <div className="flip-card__face flip-card__face--front" aria-hidden={shown} inert={shown}>
+        <motion.div
+          className="flip-card__face flip-card__face--front"
+          style={{ visibility: frontVis }}
+          aria-hidden={shown}
+          inert={shown}
+        >
           {front}
           {glare ? <span className="flip-card__glare" aria-hidden="true" /> : null}
-        </div>
-        <div className="flip-card__face flip-card__face--back" aria-hidden={!shown} inert={!shown}>
+        </motion.div>
+        <motion.div
+          className="flip-card__face flip-card__face--back"
+          style={{ visibility: backVis }}
+          aria-hidden={!shown}
+          inert={!shown}
+        >
           {back}
           {glare ? <span className="flip-card__glare" aria-hidden="true" /> : null}
-        </div>
+        </motion.div>
       </motion.div>
     </div>
   );

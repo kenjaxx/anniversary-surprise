@@ -52,6 +52,7 @@
 .flip-card__rotor {
   position: absolute;
   inset: 0;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
