@@ -3,6 +3,7 @@ const prefersReducedMotion = () =>
 
 // Very gentle start and finish.
 const easeInOutSine = t => -(Math.cos(Math.PI * t) - 1) / 2;
+export const linear = t => t;
 
 let active = null;
 
@@ -20,9 +21,10 @@ export function stopScroll() {
 }
 
 // Returns a promise that resolves when the glide ends (or is interrupted).
-export function scrollToY(targetY, { duration, interruptible = true } = {}) {
+export function scrollToY(targetY, { duration, interruptible = true, easing } = {}) {
   stopActive();
 
+  const ease = easing || easeInOutSine;
   const startY = window.scrollY;
   const maxY = document.documentElement.scrollHeight - window.innerHeight;
   const to = Math.max(0, Math.min(targetY, maxY));
@@ -53,7 +55,7 @@ export function scrollToY(targetY, { duration, interruptible = true } = {}) {
 
     const step = now => {
       const p = Math.min(1, (now - t0) / ms);
-      window.scrollTo(0, startY + distance * easeInOutSine(p));
+      window.scrollTo(0, startY + distance * ease(p));
       if (p < 1) state.frame = requestAnimationFrame(step);
       else stopActive();
     };

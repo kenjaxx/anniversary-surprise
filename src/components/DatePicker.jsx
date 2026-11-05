@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, Check, Copy, Heart, MessageCircle, X } from 'lucide-react';
 import CircularGallery from './CircularGallery.jsx';
@@ -132,6 +132,8 @@ function Picker({ onClose }) {
   const [when, setWhen] = useState(cfg.whenOptions[0]);
   const [step, setStep] = useState('pick'); // 'pick' | 'done'
   const [copied, setCopied] = useState(false);
+  const [nowMsg, setNowMsg] = useState(false); // the soft "now you choose" popup
+  const autoDone = useRef(false);              // the auto hover runs only once per opening
   const items = useGalleryItems();
   const webgl = useMemo(hasWebGL2, []);
   const mobile = useMemo(isMobile, []);
@@ -161,10 +163,59 @@ function Picker({ onClose }) {
     if (step === 'done') fireConfetti(1400);
   }, [step]);
 
+  // AUTO HOVER: every card is shown one by one (movie, drive, coffee, food, chill, walk),
+  // it comes back to the first one, and then the "now you choose" popup appears.
+  // Each card stays about 1 second (dwellMs) after the gallery has slid to it (glideMs).
+  // If she touches, scrolls or presses a key herself, the preview stops and the popup closes.
+  useEffect(() => {
+    if (step !== 'pick' || autoDone.current) return undefined;
+
+    const { startMs, dwellMs, glideMs, nowMs } = cfg.autoPlay;
+    const stepMs = dwellMs + glideMs;
+    const n = cfg.options.length;
+    const list = [];
+    const at = (ms, fn) => list.push(setTimeout(fn, ms));
+
+    const nudge = () => {
+      const gallery = document.querySelector('.dp-stage .circular-gallery');
+      if (gallery) {
+        gallery.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      } else {
+        setIndex(i => (i + 1) % n); // no WebGL: the simple card row
+      }
+    };
+
+    // n steps = card 2, 3 ... n, and back to card 1
+    for (let k = 0; k < n; k += 1) at(startMs + k * stepMs, nudge);
+
+    // the popup appears after the last card (back on the first one) has had its moment
+    const showAt = startMs + (n - 1) * stepMs + glideMs + 400;
+    at(showAt, () => {
+      autoDone.current = true;
+      setNowMsg(true);
+    });
+    at(showAt + nowMs, () => setNowMsg(false));
+
+    const stop = e => {
+      if (e && e.isTrusted === false) return; // ignore our own ArrowRight
+      list.forEach(clearTimeout);
+      autoDone.current = true;
+      setNowMsg(false);
+    };
+    const events = ['pointerdown', 'wheel', 'touchstart', 'keydown'];
+    events.forEach(ev => window.addEventListener(ev, stop, { passive: true }));
+
+    return () => {
+      list.forEach(clearTimeout);
+      events.forEach(ev => window.removeEventListener(ev, stop));
+    };
+  }, [step]);
+
   // Confirming never leaves the page, on any device. The message is copied as a backup,
   // and the confirmation screen has the "Open messages" button.
   const confirm = async () => {
     setCopied(await copyText(message));
+    setNowMsg(false);
     setStep('done');
   };
 
@@ -206,7 +257,6 @@ function Picker({ onClose }) {
           <header className="dp-head">
             <span className="dp-rule" aria-hidden="true" />
             <h2>{cfg.heading}</h2>
-            <p>{cfg.subheading}</p>
           </header>
         )}
 
@@ -254,8 +304,24 @@ function Picker({ onClose }) {
 
             <section className="dp-panel" aria-live="polite">
               <span className="dp-label">Your pick</span>
-              <h3 className="dp-pick" key={option.title}>{option.title} {option.emoji}</h3>
-              <p className="dp-pick-line" key={option.line}>{option.line}</p>
+
+              {/* All six titles sit in ONE grid cell and only the chosen one is visible,
+                  so the box is always as tall as the tallest one and never jumps. */}
+              <div className="dp-titles">
+                {cfg.options.map((o, i) => (
+                  <h3 key={o.title} className={`dp-pick${i === index ? ' on' : ''}`} aria-hidden={i !== index}>
+                    {o.title} {o.emoji}
+                  </h3>
+                ))}
+              </div>
+
+              <div className="dp-lines">
+                {cfg.options.map((o, i) => (
+                  <p key={o.title} className={`dp-pick-line${i === index ? ' on' : ''}`} aria-hidden={i !== index}>
+                    {o.line}
+                  </p>
+                ))}
+              </div>
 
               <div className="dp-chips" role="group" aria-label="When">
                 {cfg.whenOptions.map(w => (
@@ -328,6 +394,20 @@ function Picker({ onClose }) {
           </section>
         )}
       </div>
+
+      {/* The soft "now you choose" popup, shown after every card has been hovered */}
+      {nowMsg && step === 'pick' && (
+        <div
+          className="dp-now"
+          role="status"
+          style={{ animationDuration: `${cfg.autoPlay.nowMs}ms` }}
+        >
+          <span className="dp-now-heart" aria-hidden="true">♥</span>
+          <span className="dp-now-eyebrow">{cfg.nowChoose.eyebrow}</span>
+          <strong>{cfg.nowChoose.title}</strong>
+          <p>{cfg.nowChoose.line}</p>
+        </div>
+      )}
     </div>
   );
 }

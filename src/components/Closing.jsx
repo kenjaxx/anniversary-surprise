@@ -1,23 +1,42 @@
 import { useEffect, useRef, useState } from 'react';
-import { Heart, Moon } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { content } from '../data/content.js';
 import DatePicker from './DatePicker.jsx';
 
-// A fixed set of stars, generated once (not on every render) from a tiny seeded generator.
-const STARS = (() => {
-  let seed = 11;
-  const rnd = () => {
+// A tiny seeded generator, so the decorations are made once and never jump between renders.
+const seeded = start => {
+  let seed = start;
+  return () => {
     seed = (seed * 16807) % 2147483647;
     return seed / 2147483647;
   };
+};
+
+// Soft gold sparkles that twinkle in the warm sky.
+const SPECKS = (() => {
+  const rnd = seeded(11);
   const glyphs = ['✦', '✧'];
-  return Array.from({ length: 20 }, (_, i) => ({
+  return Array.from({ length: 18 }, (_, i) => ({
     left: 3 + rnd() * 94,
-    top: 3 + rnd() * 55,
+    top: 4 + rnd() * 56,
     size: 9 + Math.round(rnd() * 9),
-    dur: 3.2 + rnd() * 3,
-    delay: -(rnd() * 6), // negative = each star starts at a different point in its cycle
+    dur: 3.4 + rnd() * 3,
+    delay: -(rnd() * 6), // negative = each one starts at a different point in its cycle
     glyph: glyphs[i % 2],
+  }));
+})();
+
+// Petals and hearts that drift down, slowly.
+const PETALS = (() => {
+  const rnd = seeded(29);
+  const glyphs = ['♡', '✿', '♥', '❀'];
+  return Array.from({ length: 12 }, (_, i) => ({
+    left: 3 + rnd() * 94,
+    size: 12 + Math.round(rnd() * 12),
+    dur: 17 + rnd() * 12,
+    delay: -(rnd() * 24),
+    dx: Math.round((rnd() - 0.5) * 90),
+    glyph: glyphs[i % glyphs.length],
   }));
 })();
 
@@ -69,6 +88,15 @@ function SecretNote({ text }) {
   );
 }
 
+// A little bird, drawn as a single line.
+function Bird({ className }) {
+  return (
+    <svg className={`gs-bird ${className}`} viewBox="0 0 24 10" width="26" height="11" aria-hidden="true">
+      <path d="M1 7 Q6 0 12 6 Q18 0 23 7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function Closing({ onReplay }) {
   const [secret, setSecret] = useState(false);
   const [picker, setPicker] = useState(false);
@@ -105,7 +133,7 @@ export default function Closing({ onReplay }) {
     return () => clearTimeout(id);
   }, [secret]);
 
-  // Only animate while the night sky is on screen. Off screen, every animation is paused (saves battery and frames).
+  // Only animate while the sky is on screen. Off screen, every animation is paused (saves battery and frames).
   useEffect(() => {
     const el = skyRef.current;
     if (!el) return undefined;
@@ -130,14 +158,15 @@ export default function Closing({ onReplay }) {
 
   return (
     <>
-      <section className="final-section" id="final">
-        <div className="night-sky" ref={skyRef}>
-          <div className="sky-glow" aria-hidden="true" />
+      <section className="final-section golden" id="final">
+        {/* "night-sky" is kept in the class list on purpose: the guided tour scrolls to it */}
+        <div className="night-sky golden-sky" ref={skyRef}>
+          <div className="gs-sun" aria-hidden="true" />
 
-          {STARS.map((s, i) => (
+          {SPECKS.map((s, i) => (
             <span
-              key={i}
-              className="star"
+              key={`s${i}`}
+              className="gs-speck"
               aria-hidden="true"
               style={{ left: `${s.left}%`, top: `${s.top}%`, fontSize: s.size, '--d': `${s.dur}s`, '--dl': `${s.delay}s` }}
             >
@@ -145,12 +174,20 @@ export default function Closing({ onReplay }) {
             </span>
           ))}
 
-          <span className="shoot shoot-1" aria-hidden="true" />
-          <span className="shoot shoot-2" aria-hidden="true" />
+          {PETALS.map((p, i) => (
+            <span
+              key={`p${i}`}
+              className="gs-petal"
+              aria-hidden="true"
+              style={{ left: `${p.left}%`, fontSize: p.size, '--dur': `${p.dur}s`, '--dl': `${p.delay}s`, '--dx': `${p.dx}px` }}
+            >
+              {p.glyph}
+            </span>
+          ))}
 
-          <div className="sky-moon" aria-hidden="true">
-            <Moon size={46} fill="currentColor" strokeWidth={0} />
-          </div>
+          <Bird className="b1" />
+          <Bird className="b2" />
+          <Bird className="b3" />
 
           <div className="final-content">
             <span className="eyebrow">and this is only the beginning</span>
@@ -179,18 +216,20 @@ export default function Closing({ onReplay }) {
             <button className="replay-button" onClick={replay}>↺ &nbsp; Start our little story again</button>
           </div>
 
+          {/* three rolling hills, from light rose to deep wine */}
           <svg className="sky-hills" viewBox="0 0 680 130" preserveAspectRatio="none" aria-hidden="true">
-            <polygon points="0,70 120,40 260,66 420,34 560,60 680,44 680,130 0,130" fill="#4a3452" />
-            <polygon points="0,96 150,74 300,98 470,70 620,96 680,84 680,130 0,130" fill="#2c2440" />
-            <polygon points="0,116 200,100 400,114 600,98 680,108 680,130 0,130" fill="#1b1830" />
+            <path d="M0 70 C110 38 210 82 340 56 S570 36 680 64 L680 130 L0 130 Z" fill="#c9707f" />
+            <path d="M0 96 C130 70 250 108 390 84 S600 78 680 90 L680 130 L0 130 Z" fill="#a24662" />
+            <path d="M0 116 C160 98 300 120 460 106 S620 102 680 110 L680 130 L0 130 Z" fill="#7a2e45" />
           </svg>
 
+          {/* the two of them, watching the sun go down */}
           <div className="sky-couple" aria-hidden="true">
             <span className="sky-couple-heart">♥</span>
             <svg viewBox="0 0 60 42" width="64" height="45">
-              <ellipse cx="30" cy="30" rx="26" ry="14" fill="#16132a" />
-              <circle cx="22" cy="14" r="8" fill="#16132a" />
-              <circle cx="38" cy="14" r="8" fill="#16132a" />
+              <ellipse cx="30" cy="30" rx="26" ry="14" fill="#4a1a2c" />
+              <circle cx="22" cy="14" r="8" fill="#4a1a2c" />
+              <circle cx="38" cy="14" r="8" fill="#4a1a2c" />
             </svg>
           </div>
         </div>

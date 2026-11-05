@@ -22,7 +22,22 @@ export const datePicker = {
   display: '+63 976 637 9356',
 
   heading: 'Where to next, love?',
-  subheading: 'Choose our next date. I’ll take care of the rest. 💌',
+
+  // AUTO PREVIEW: when the picker opens, the cards hover one by one by themselves,
+  // then the "now you choose" popup appears.
+  autoPlay: {
+    startMs: 1800,   // wait after it opens, before the first card moves
+    dwellMs: 1000,   // how long each card stays on screen so she can read it (1 second)
+    glideMs: 700,    // time the gallery needs to slide to the next card
+    nowMs: 5200,     // how long the "now you choose" popup stays
+  },
+
+  // The soft popup shown after every card has been hovered.
+  nowChoose: {
+    eyebrow: 'your turn',
+    title: 'Now you choose, love ♡',
+    line: 'Every one of them is already yours. Just pick the one your heart wants.',
+  },
 
   // When she can say she wants it.
   whenOptions: [

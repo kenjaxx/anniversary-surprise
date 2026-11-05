@@ -10,11 +10,25 @@ const ease = x => x * x * (3 - 2 * x);                    // soft start and fini
 
 const LIFT_SHADOW = '0 22px 40px -26px rgba(122,60,60,.55)';
 
+// "My Love, Ehrica" -> "Ehrica", so the letter says "My dearest Ehrica," (not "My dearest My Love, Ehrica,").
+const NAME = content.partnerNickname.replace(/^\s*my love\s*,?\s*/i, '').trim() || content.partnerNickname;
+
+// Little pressed flowers for the corners.
+const Flowers = ({ corners }) => (
+  <>
+    {corners.includes('tl') && <span className="tf-fl tl" aria-hidden="true">✿</span>}
+    {corners.includes('tr') && <span className="tf-fl tr" aria-hidden="true">❀</span>}
+    {corners.includes('bl') && <span className="tf-fl bl" aria-hidden="true">❀</span>}
+    {corners.includes('br') && <span className="tf-fl br" aria-hidden="true">✿</span>}
+  </>
+);
+
 // The letter text. It is drawn three times (once per panel); each panel shows its own third.
 function LetterText() {
   return (
     <div className="tf-text">
-      <p className="tf-salutation">My dearest {content.partnerNickname},</p>
+      <p className="tf-salutation">My dearest {NAME},</p>
+      <p className="tf-orn" aria-hidden="true">✿ ♡ ✿</p>
       {content.letter.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
       <p className="tf-signature">
         Forever yours,<br />{content.senderName} <Heart size={18} fill="currentColor" />
@@ -26,10 +40,17 @@ function LetterText() {
 // ---------------------------------------------------------------------------------------------
 // THE TRI-FOLD LETTER
 // The page scroll drives everything. `p` goes from 0 to 1 while the pinned letter is on screen:
-//   0.03 - 0.27  unfolds (top panel first, then the bottom one)
-//   0.27 - 0.84  the open sheet is read: the text glides up through it
-//   0.86 - 0.99  folds shut again (bottom panel first, then the top one)
+//   0.02 - 0.13  unfolds (top panel first, then the bottom one)
+//   0.13 - 0.88  the open sheet is read: the text glides up through it
+//   0.88 - 0.99  folds shut again (bottom panel first, then the top one)
+// If you change READ, also change letterOpenAt / letterReadEnd in data/tour.js.
 // ---------------------------------------------------------------------------------------------
+const OPEN_TOP = [0.02, 0.08];
+const OPEN_BOTTOM = [0.06, 0.13];
+const READ = [0.13, 0.88];
+const CLOSE_BOTTOM = [0.88, 0.94];
+const CLOSE_TOP = [0.93, 0.99];
+
 function TriFold() {
   const trackRef = useRef(null);
   const stickyRef = useRef(null);
@@ -63,7 +84,8 @@ function TriFold() {
       m.pw = Math.max(240, Math.min(540, sw - 24));
       // whole pixels only, so the panels meet exactly (no hairline between them)
       m.ph = Math.round(Math.max(110, Math.min((sh - 64) / 3, 250)));
-      const pad = Math.round(Math.min(46, Math.max(22, m.pw * 0.085)));
+      // wider side margins, so the text never touches the corner flowers
+      const pad = Math.round(Math.min(50, Math.max(34, m.pw * 0.09)));
 
       stage.style.setProperty('--pw', `${m.pw}px`);
       stage.style.setProperty('--ph', `${m.ph}px`);
@@ -75,8 +97,8 @@ function TriFold() {
     };
 
     const paint = p => {
-      const a = ease(seg(p, 0.03, 0.17)) * (1 - ease(seg(p, 0.92, 0.99))); // top panel: 0 folded, 1 open
-      const c = ease(seg(p, 0.12, 0.27)) * (1 - ease(seg(p, 0.86, 0.93))); // bottom panel
+      const a = ease(seg(p, OPEN_TOP[0], OPEN_TOP[1])) * (1 - ease(seg(p, CLOSE_TOP[0], CLOSE_TOP[1]))); // top panel
+      const c = ease(seg(p, OPEN_BOTTOM[0], OPEN_BOTTOM[1])) * (1 - ease(seg(p, CLOSE_BOTTOM[0], CLOSE_BOTTOM[1]))); // bottom panel
       const persp = m.pw * 2.4;
 
       // top panel hinges on its bottom edge, bottom panel on its top edge
@@ -97,10 +119,10 @@ function TriFold() {
       shades.current[2].style.opacity = (Math.sin(Math.PI * c) * 0.28).toFixed(3);
 
       glow.style.opacity = (0.3 + 0.7 * ((a + c) / 2)).toFixed(3);
-      hint.style.opacity = (1 - seg(p, 0, 0.05)).toFixed(3);
+      hint.style.opacity = (1 - seg(p, 0, 0.03)).toFixed(3);
 
       // reading: every panel shows its own third of the same long text, all moved together
-      const off = m.maxOff * seg(p, 0.27, 0.84);
+      const off = m.maxOff * seg(p, READ[0], READ[1]);
       texts.current.forEach((el, i) => {
         if (el) el.style.transform = `translate3d(0,${(-(i * m.ph + off)).toFixed(1)}px,0)`;
       });
@@ -119,7 +141,7 @@ function TriFold() {
     const loop = () => {
       raf = 0;
       const diff = target - cur;
-      cur = Math.abs(diff) < 0.0004 ? target : cur + diff * 0.14;
+      cur = Math.abs(diff) < 0.0004 ? target : cur + diff * 0.09;
       paint(cur);
       if (cur !== target) raf = requestAnimationFrame(loop);
     };
@@ -158,7 +180,7 @@ function TriFold() {
     <>
       {/* screen readers get the letter once, as plain text */}
       <div className="sr-only">
-        <p>My dearest {content.partnerNickname},</p>
+        <p>My dearest {NAME},</p>
         {content.letter.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
         <p>Forever yours, {content.senderName}</p>
       </div>
@@ -179,14 +201,18 @@ function TriFold() {
                     <div className="tf-text-wrap" ref={el => { texts.current[i] = el; }}>
                       <LetterText />
                     </div>
+                    {/* flowers sit in the outer corners of the whole open sheet */}
+                    {i === 0 && <Flowers corners={['tl', 'tr']} />}
+                    {i === 2 && <Flowers corners={['bl', 'br']} />}
                   </div>
                   <span className="tf-shade" ref={el => { shades.current[i] = el; }} />
 
                   {/* the cover is printed on the BACK of the top panel, so it shows while the letter is folded */}
                   {i === 0 && (
                     <div className="tf-cover" ref={coverRef}>
+                      <Flowers corners={['tl', 'tr', 'bl', 'br']} />
                       <span className="tf-seal"><Heart size={20} fill="currentColor" /></span>
-                      <h3>A note for {content.partnerNickname}</h3>
+                      <h3>A note for {NAME}</h3>
                       <p>Written with all my love, and meant only for you.</p>
                     </div>
                   )}
@@ -206,15 +232,15 @@ function TriFold() {
 function StaticLetter() {
   return (
     <div className="letter-paper reveal">
-      <div className="paper-flower">✿</div>
+      <Flowers corners={['tl', 'tr', 'bl', 'br']} />
       <div className="letter-content">
-        <p className="handwritten salutation">My dearest {content.partnerNickname},</p>
+        <p className="handwritten salutation">My dearest {NAME},</p>
+        <p className="tf-orn" aria-hidden="true">✿ ♡ ✿</p>
         {content.letter.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
         <p className="handwritten signature">
           Forever yours,<br />{content.senderName} <Heart size={18} fill="currentColor" />
         </p>
       </div>
-      <div className="paper-stamp">♡</div>
     </div>
   );
 }

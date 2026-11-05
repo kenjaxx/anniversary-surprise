@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { scrollToY, stopScroll } from '../utils/scroll.js';
+import { scrollToY, stopScroll, linear } from '../utils/scroll.js';
 import { content } from '../data/content.js';
 import { tour as cfg } from '../data/tour.js';
 
@@ -15,7 +15,6 @@ const letterWords = () =>
   wordCount(`${content.letter.join(' ')} My dearest Forever yours`);
 
 // The tour, one step per section.
-// (The growing tree now lives in the hero, and is started by Hero/App before the tour begins.)
 const STEPS = [
   // 1. Time together counter
   async t => {
@@ -39,6 +38,7 @@ const STEPS = [
   },
 
   // 3. Photo memories
+    // 3. Photo memories
   async t => {
     await t.goTo('#story .section-heading');
     await t.wait(1800);
@@ -49,14 +49,28 @@ const STEPS = [
     await t.goTo('.wall-actions');
     await t.wait(1500);
 
-    // Open all photos
-    emit('tour:open-all');
-    await t.wait(2200);
-
     const moments = content.moments;
+    const total = moments.length;
 
-    // Go through every memory
-    for (let i = 0; i < moments.length; i += 1) {
+    // Open the "all photos" page
+    emit('tour:open-all');
+    await t.wait(150);
+
+    // Start the rope a few photos BEFORE the end (e.g. photo 12 of 16)...
+    const startFrom = (((total - cfg.browseCount) % total) + total) % total;
+    emit('tour:browse', { to: startFrom });
+    await t.wait(cfg.browseLeadMs);
+
+    // ...then glide through the last photos, one by one. After the last glide
+    // the rope lands on photo 1, so the popups below start at 1/16.
+    for (let i = 0; i < cfg.browseCount; i += 1) {
+      emit('tour:browse', { delta: 1 });
+      await t.wait(cfg.browseGapMs);
+    }
+    await t.wait(500);
+
+    // Show every photo in order: 1/16, 2/16 ... 16/16
+    for (let i = 0; i < total; i += 1) {
       emit('tour:memory', { index: i });
 
       const words =
@@ -104,16 +118,45 @@ const STEPS = [
     }
   },
 
-  // 5. Love letter
-  // 5. Love letter (scroll-driven tri-fold: the tour's scroll opens it, reads it, and folds it shut)
+  // 5. Love letter (scroll-driven tri-fold), in three phases:
+  //    quick unfold -> slow, steady reading -> fold shut
   async t => {
     await t.goTo('#letter');
-    await t.wait(1800);
+    await t.wait(1200);
 
-    await t.readThrough(
-      document.querySelector('.tf-track'),
-      letterWords() * cfg.wordMs * 0.9 + 6000
-    );
+    const track = document.querySelector('.tf-track');
+    if (!track) {
+      // reduced motion: the letter is a plain open page
+      await t.wait(letterWords() * cfg.wordMs * cfg.letterReadFactor);
+      return;
+    }
+
+    // Pin the letter (progress 0), then move to any progress 0..1 of its scroll track.
+    await t.goTo(track);
+
+    const toProgress = async (p, ms, easing) => {
+      const sticky = track.querySelector('.tf-sticky');
+      const pad = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+      const rect = track.getBoundingClientRect();
+      const total = rect.height - sticky.offsetHeight;
+      const y0 = window.scrollY + rect.top - pad;
+      await t.scrollY(y0 + total * p, ms, easing);
+    };
+
+    await t.wait(500);
+
+    // 1) unfold, quickly
+    await toProgress(cfg.letterOpenAt + 0.01, cfg.letterOpenMs);
+    await t.wait(700);
+
+    // 2) read, slowly and at a steady speed
+    const readMs = letterWords() * cfg.wordMs * cfg.letterReadFactor + 6000;
+    await toProgress(cfg.letterReadEnd + 0.005, readMs, linear);
+    await t.wait(900);
+
+    // 3) fold shut
+    await toProgress(1, cfg.letterCloseMs);
+    await t.wait(1200);
   },
 
   // 6. Closing night sky
@@ -125,7 +168,7 @@ const STEPS = [
     await t.wait(5500);
   },
 
-  // 7. Date picker
+  // 7. Date picker (it hovers every date by itself, then shows "now you choose")
   async t => {
     emit('tour:date-picker');
     await t.wait(2500);
@@ -241,41 +284,21 @@ export default function useAutoTour({ celebrate, isCelebrated }) {
       check();
     };
 
-    // Scroll through taller sections
-    const readThrough = async (el, readMs) => {
-      if (!el) return;
-
-      await goTo(el);
-
-      const r = el.getBoundingClientRect();
-
-      if (r.bottom <= window.innerHeight - 12) {
-        await wait(readMs);
-        return;
-      }
-
-      const endY =
-        window.scrollY +
-        r.bottom -
-        window.innerHeight +
-        28;
-
-      await wait(900);
-
-      await scrollToY(endY, {
-        duration: readMs * cfg.pace,
+    // Scroll to an exact position over a given time (optionally at a steady speed).
+    const scrollY = async (y, ms, easing) => {
+      await scrollToY(y, {
+        duration: ms * cfg.pace,
         interruptible: false,
+        easing,
       });
 
       check();
-
-      await wait(1200);
     };
 
     const tools = {
       wait,
       goTo,
-      readThrough,
+      scrollY,
       api: api.current,
     };
 

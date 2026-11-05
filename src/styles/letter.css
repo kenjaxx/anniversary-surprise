@@ -1,4 +1,4 @@
-/* letter.css: the scroll-driven tri-fold letter.
+/* letter.css: the scroll-driven tri-fold letter, "Pressed flowers" style.
    The page scroll opens, reads and closes it (see Letter.jsx).
    Only transform / opacity / visibility change while scrolling, so it stays smooth. */
 
@@ -27,12 +27,12 @@
   --pw:520px;--ph:200px;--pad:40px;--fs:16px; /* JS keeps these in sync with the screen size */
 }
 
-/* soft blush light behind the paper, brighter once it is open */
+/* soft rose light behind the paper, brighter once it is open */
 .tf-glow{
   position:absolute;left:50%;top:50%;z-index:0;
   width:min(900px,120%);height:72%;border-radius:50%;pointer-events:none;
   transform:translate(-50%,-50%);
-  background:radial-gradient(closest-side,rgba(255,214,200,.55),rgba(255,236,214,.28) 55%,transparent 78%);
+  background:radial-gradient(closest-side,rgba(247,190,200,.5),rgba(255,226,214,.26) 55%,transparent 78%);
   opacity:.3;
 }
 
@@ -43,29 +43,30 @@
   margin:calc(var(--ph) / -2) 0 0 calc(var(--pw) / -2);
 }
 
-/* one flat paper colour, no shadows between panels: the open sheet reads as ONE page.
+/* one flat blush paper colour, so the open sheet reads as ONE page.
+   The dashed rose border runs around the whole sheet (top panel = top edge, bottom panel = bottom edge).
    (The drop shadow is added by Letter.jsx only while a panel is folded or folding.) */
 .tf-panel{
   position:absolute;left:0;width:100%;height:100%;
-  background:#fff5e4;
-  border-left:1px solid #f0dfc4;border-right:1px solid #f0dfc4;
+  background:#fff1ee;
+  border-left:1.5px dashed #efb3bd;border-right:1.5px dashed #efb3bd;
   will-change:transform;
 }
 /* top panel: folds down over the middle one, hinged on its bottom edge */
 .tf-panel-0{
   top:calc(var(--ph) * -1);z-index:3;transform-origin:50% 100%;
-  border-top:1px solid #f0dfc4;border-radius:6px 6px 0 0;
+  border-top:1.5px dashed #efb3bd;border-radius:18px 18px 0 0;
 }
 /* middle panel: stays put. It is painted 1px taller above and below (behind its neighbours),
    so no hairline can show where two panels meet. */
 .tf-panel-1{top:0;z-index:1}
 .tf-panel-1::before{
-  content:'';position:absolute;left:0;right:0;top:-1px;bottom:-1px;z-index:-1;background:#fff5e4;
+  content:'';position:absolute;left:0;right:0;top:-1px;bottom:-1px;z-index:-1;background:#fff1ee;
 }
 /* bottom panel: folds up over the middle one, hinged on its top edge */
 .tf-panel-2{
   top:var(--ph);z-index:2;transform-origin:50% 0;
-  border-bottom:1px solid #f0dfc4;border-radius:0 0 6px 6px;
+  border-bottom:1.5px dashed #efb3bd;border-radius:0 0 18px 18px;
 }
 
 /* each panel is a window onto the same long text, shifted by its own third */
@@ -73,13 +74,28 @@
 .tf-text-wrap{position:absolute;left:0;top:0;width:var(--pw);will-change:transform}
 
 .tf-text{
-  padding:34px var(--pad) 44px;
+  padding:36px var(--pad) 48px;
   font-family:var(--serif);font-size:var(--fs);line-height:1.9;color:#6e5148;
 }
 .tf-text p{margin:0 0 15px}
-.tf-text .tf-salutation{font:500 30px/1.3 var(--script);color:#89535b;margin-bottom:18px}
-.tf-text .tf-signature{font:500 26px/1.4 var(--script);color:#89535b;text-align:right;margin:26px 0 0}
-.tf-signature svg{color:#d96075;vertical-align:middle}
+.tf-text .tf-salutation{
+  font:500 31px/1.3 var(--script);color:#b5586b;text-align:center;margin:0 0 4px;
+}
+.tf-text .tf-orn{
+  text-align:center;margin:0 0 20px;font-size:14px;letter-spacing:.55em;padding-left:.55em;color:#e98fa0;
+}
+.tf-text .tf-signature{font:500 27px/1.4 var(--script);color:#b5586b;text-align:right;margin:26px 0 0}
+.tf-signature svg{color:#e86e82;vertical-align:middle}
+
+/* ---------- little pressed flowers in the corners ---------- */
+.tf-fl{
+  position:absolute;z-index:2;line-height:1;pointer-events:none;
+  font-size:25px;color:#e98fa0;
+}
+.tf-fl.tl{top:9px;left:9px}
+.tf-fl.tr{top:9px;right:9px;font-size:20px;color:#e9b872;transform:rotate(14deg)}
+.tf-fl.bl{bottom:9px;left:9px;font-size:20px;color:#e9b872;transform:rotate(-14deg)}
+.tf-fl.br{bottom:9px;right:9px}
 
 /* shade while a panel is mid-fold */
 .tf-shade{position:absolute;inset:0;background:#7a4a3a;opacity:0;pointer-events:none;border-radius:inherit}
@@ -88,34 +104,49 @@
 .tf-cover{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  padding:0 24px;text-align:center;
+  padding:0 30px;text-align:center;
   transform:rotateX(180deg);visibility:hidden;
 }
 .tf-cover::before{
-  content:'';position:absolute;inset:9px;border:1px solid rgba(201,160,99,.5);border-radius:4px;pointer-events:none;
+  content:'';position:absolute;inset:9px;border:1px dashed rgba(233,143,160,.7);border-radius:12px;pointer-events:none;
 }
 .tf-seal{
   width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
   color:#ffe9dc;background:radial-gradient(circle at 35% 30%,#ef8a9a,#c94f68 72%);
   box-shadow:0 6px 14px -4px rgba(155,70,80,.55);
 }
-.tf-cover h3{font:italic 500 clamp(19px,3vw,26px)/1.2 var(--serif);color:var(--ink);margin:4px 0 0}
-.tf-cover p{font-size:13.5px;line-height:1.5;color:#8f7971;margin:0}
+.tf-cover h3{font:italic 500 clamp(19px,3vw,26px)/1.2 var(--serif);color:#7a2e45;margin:4px 0 0}
+.tf-cover p{font-size:13.5px;line-height:1.5;color:#9a7a76;margin:0}
 
 .tf-hint{
   position:absolute;left:0;right:0;bottom:6px;z-index:2;margin:0;
-  text-align:center;font:20px var(--script);color:#9a6b70;pointer-events:none;
+  text-align:center;font:20px var(--script);color:#b5586b;pointer-events:none;
   animation:tfNudge 2.4s ease-in-out infinite;
 }
 @keyframes tfNudge{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+/* ---------- reduced motion: the letter is simply open (same flowers, same paper) ---------- */
+.letter-paper{
+  background:#fff1ee;
+  border:1.5px dashed #efb3bd;border-radius:18px;
+  box-shadow:0 18px 50px -18px rgba(160,70,80,.28);
+  transform:none;
+}
+.letter-paper:before{inset:10px;border:1px dashed #f3c6cc;border-radius:12px}
+.letter-paper .letter-content .salutation{text-align:center;color:#b5586b;font-size:30px;margin-bottom:6px}
+.letter-paper .letter-content .tf-orn{text-align:center;margin:0 0 20px;font-size:14px;letter-spacing:.55em;padding-left:.55em;color:#e98fa0}
+.letter-paper .letter-content .signature{color:#b5586b}
+.letter-paper .tf-fl{z-index:2}
 
 /* ---------- phones: a longer track, because the text is narrower and taller ---------- */
 @media(max-width:560px){
   .tf-track{height:calc(100vh + 420vh)}
   @supports (height:100dvh){.tf-track{height:calc(100dvh + 420vh)}}
-  .tf-text{padding-top:28px}
-  .tf-text .tf-salutation{font-size:26px;margin-bottom:14px}
-  .tf-text .tf-signature{font-size:23px}
+  .tf-text{padding-top:30px}
+  .tf-text .tf-salutation{font-size:27px}
+  .tf-text .tf-signature{font-size:24px}
   .tf-cover p{font-size:12.5px}
   .tf-seal{width:40px;height:40px}
+  .tf-fl{font-size:21px}
+  .tf-fl.tr,.tf-fl.bl{font-size:17px}
 }

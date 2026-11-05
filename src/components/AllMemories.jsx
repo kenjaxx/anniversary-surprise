@@ -40,6 +40,17 @@ export default function AllMemories({ items, onSelect, onClose, escapeDisabled, 
     if (activeIndex != null) setCur(activeIndex);
   }, [activeIndex]);
 
+ 
+  useEffect(() => {
+    const onBrowse = e => {
+      const d = e.detail || {};
+      if (typeof d.to === 'number') setCur(((d.to % n) + n) % n);
+      else go(d.delta || 1);
+    };
+    window.addEventListener('tour:browse', onBrowse);
+    return () => window.removeEventListener('tour:browse', onBrowse);
+  }, [go, n]);
+
   // Escape closes. Arrow keys move along the line (but not while a photo popup is open on top).
   useEffect(() => {
     const onKey = e => {

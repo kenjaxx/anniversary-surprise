@@ -439,3 +439,106 @@
   .dp-deco{display:none}
   .dp-close:hover{transform:none}
 }
+
+/* ================= "Now you choose" popup (after the auto hover) ================= */
+.dp-now{
+  --tint:rgba(20,10,28,.4);
+  position:fixed;left:50%;top:46%;z-index:6;
+  width:min(420px,calc(100% - 40px));padding:28px 28px 26px;text-align:center;
+  pointer-events:none;color:var(--dp-ink);
+  background:linear-gradient(var(--tint),var(--tint)),var(--dp-panel);
+  border:1px solid var(--dp-panel-line);border-radius:var(--dp-radius);
+  box-shadow:var(--dp-panel-shadow);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  animation:dpNow 5.2s cubic-bezier(.22,.7,.25,1) both;
+}
+.dp-overlay[data-theme='coffee'] .dp-now{--tint:rgba(255,248,238,.72)}
+.dp-overlay[data-theme='food'] .dp-now{--tint:transparent}
+.dp-now-heart{display:block;font-size:26px;line-height:1;color:var(--dp-accent);margin-bottom:10px;animation:heartbeat 1.6s ease-in-out infinite}
+.dp-now-eyebrow{display:block;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--dp-accent)}
+.dp-now strong{
+  display:block;margin:8px 0 8px;
+  font-family:var(--dp-head-font);font-weight:var(--dp-head-weight);text-transform:var(--dp-head-case);
+  font-style:italic;font-size:calc(31px * var(--dp-head-scale));line-height:1.15;color:var(--dp-ink);
+}
+.dp-overlay[data-theme='food'] .dp-now strong,
+.dp-overlay[data-theme='movie'] .dp-now strong,
+.dp-overlay[data-theme='drive'] .dp-now strong{font-style:normal}
+.dp-now p{margin:0;font:italic 17px/1.6 var(--dp-sub-font);color:var(--dp-sub)}
+
+@keyframes dpNow{
+  0%{opacity:0;transform:translate(-50%,-42%) scale(.94)}
+  14%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  86%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-58%) scale(.98)}
+}
+
+@media(max-width:560px){
+  .dp-now{padding:24px 20px 22px}
+  .dp-now strong{font-size:calc(27px * var(--dp-head-scale))}
+  .dp-now p{font-size:15.5px}
+}
+@media(prefers-reduced-motion:reduce){
+  .dp-now{animation:none}
+  .dp-now-heart{animation:none}
+}
+
+/* ================= fixed-height pick panel =================
+   All titles / descriptions share one grid cell. The cell is as tall as the tallest one,
+   so the box never changes height when she hovers a different date. */
+.dp-titles{display:grid;margin:6px 0 8px}
+.dp-lines{display:grid;width:100%;max-width:440px;margin:0 auto 20px}
+
+.dp-pick,
+.dp-pick-line{
+  grid-area:1 / 1;
+  margin:0;
+  visibility:hidden;
+  opacity:0;
+  animation:none;
+}
+.dp-pick-line{width:100%;max-width:none}
+
+.dp-pick.on{
+  visibility:visible;opacity:1;
+  animation:mmRise .5s cubic-bezier(.22,.7,.25,1) both;
+}
+.dp-pick-line.on{
+  visibility:visible;opacity:1;
+  animation:mmRise .5s cubic-bezier(.22,.7,.25,1) .05s both;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .dp-pick.on,.dp-pick-line.on{animation:none}
+}
+
+/* ================= locked heading height =================
+   The heading has the same font size and the same reserved height on every theme.
+   On phones it always reserves TWO lines, so the gallery and the pick box
+   stay at exactly the same place whether the title wraps or not. */
+.dp-overlay[data-theme] .dp-head h2{
+  --dp-h:clamp(34px,5.4vw,58px);
+  font-size:var(--dp-h);
+  line-height:1.08;
+  min-height:calc(var(--dp-h) * 1.08);
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;
+  margin:0 0 12px;
+}
+@media(max-width:560px){
+  .dp-overlay[data-theme] .dp-head h2{
+    --dp-h:clamp(32px,10vw,44px);
+    min-height:calc(var(--dp-h) * 2.16);
+  }
+}
+
+/* ================= locked title row inside the pick box =================
+   Food trip uses a 1.3x font scale, which made its title row taller than the others.
+   This reserves the tallest size for every theme. */
+.dp-titles{
+  min-height:calc(clamp(28px,4vw,36px) * 1.5);
+  align-items:center;
+}
+@media(max-width:560px){
+  .dp-titles{min-height:calc(28px * 1.5)}
+}
